@@ -1,0 +1,20 @@
+---
+title: "RawDataImport"
+author: "jhs"
+date: "2025-12-02"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+#install.packages(tidyverse);install.packages(here)
+library(tidyverse)
+library(here)
+read_excel(here('Data','Raw','NCDataPortal-RAW.xlsx'))
+```
+
+
+
+```{r cars}
+
+```
+
