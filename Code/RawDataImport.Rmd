@@ -28,24 +28,23 @@ dim(RawNCData)
 colnames(RawNCData)
 ```
 
-On first glance we see that all the columns representing average household income are stored as strings. We will clean this data so that our incomes are numeric before moving on to other formatting.
+On first glance we see that there are many more columns representing household income in more detail than we need. Additionally, we see that all the income columns are stored as strings. We will clean this data so that just the income columns we want are in the dataframe and that those columns are numeric before moving on to other formatting.
 
 ```{r Formatting Incomes as Numeric}
-CharacterColNames <- c("Average.Family.Income",
-                       "Median.Family.Income",
-                       "Married.Couple.Families.without.Children",
-                       "Married.Couple.Families.with.Children",
-                       "Single.Males.without.Children",
-                       "Single.Males.with.Children",
-                       "Single.Females.without.Children",
-                       "Single.Females.with.Children",
-                       "Non.Hispanic.White","Black",
-                       "Asian",
-                       "American.Indian.or.Alaska.Native",
-                       "Native.Hawaiian.or.Pacific.Islander",
-                       "Some.Other.Race",
-                       "Multiple.Race",
-                       "Hispanic.or.Latino")
-RawNCData[CharacterColNames] <- as.factor(RawNCData$CharacterC)
+NCData_Mutate <- RawNCData %>% 
+  select("County" = "Indicator.Attribute",
+         "Total.Family.Households",
+         "Average.Family.Income",
+         "Median.Family.Income",
+         "TotalPop2018" = "Total.Population..2018.", #Abbreviating long name
+         "Walkability.Index.Score",
+         "Least.Walkable",
+         "Below.Average.Walkable",
+         "Above.Average.Walkable",
+         "Most.Walkable",
+         "Total.Population",
+         "PopInFHA" = "Estimated.Population.Within.a.Flood.Hazard.Area", 
+         "PercentPopInFHA" = "Percentage.of.Population.Within.a.100.year.Flood.Hazard.Area")
+
 class(RawNCData$Average.Family.Income)
 ```
