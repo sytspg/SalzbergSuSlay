@@ -7,20 +7,19 @@ editor_options:
   chunk_output_type: console
 ---
 
-This raw data import relies on essential packages: tidyverse, here and readxl. We verify with `here()` that our working directory is accurate. We then import the data using the read_xlsx() function.
+This raw data import relies on essential packages tidyverse and here. We verify with `here()` that our working directory is accurate. We then import the data using the read.csv() function.
 
-```{r setup, include=FALSE}
-#install.packages(tidyverse);install.packages(here); install.packages(readxl)
+```{r setup, echo=TRUE, include=FALSE}
+#install.packages(tidyverse);install.packages(here)
 library(tidyverse)
-library(readxl)
 library(here)
 here()
-RawNCData <- data.frame(read_xlsx(here('Data','Raw','NCDataPortal-RAW.xlsx'), skip = 2), stringsAsFactors = TRUE)
+RawNCData <- data.frame(read.csv(here('Data','Raw','NCDataPortal-RAW.csv'), skip = 2), stringsAsFactors = TRUE)
 ```
 
 As always, we inspect the nature of the data. We use functions head(), str(), summary(), dim(), and colnames() to view and summarize the data.
 
-```{r Exploring the Structure of the Raw Data}
+```{r Exploring the Structure of the Raw Data, include=TRUE, echo=FALSE}
 head(RawNCData)
 str(RawNCData)
 summary(RawNCData)
@@ -28,23 +27,68 @@ dim(RawNCData)
 colnames(RawNCData)
 ```
 
-On first glance we see that there are many more columns representing household income in more detail than we need. Additionally, we see that all the income columns are stored as strings. We will clean this data so that just the income columns we want are in the dataframe and that those columns are numeric before moving on to other formatting.
+On first glance we see that there are many more columns representing household income in more detail than we need. Additionally, we see that all the income columns are stored as strings. We will clean this data so that just the income columns we want are in the dataframe and that those columns are numeric before moving on to other formatting. The lapply code using gsub is based on code provided in this [StackOverflow thread](https://stackoverflow.com/questions/74461334/replace-character-values-across-several-columns-at-once).
 
-```{r Formatting Incomes as Numeric}
+```{r Selecting Columns and Setting as Numeric, include = TRUE}
+# Select columns we intend to use and filter extraneous data
 NCData_Mutate <- RawNCData %>% 
   select("County" = "Indicator.Attribute",
-         "Total.Family.Households",
-         "Average.Family.Income",
-         "Median.Family.Income",
-         "TotalPop2018" = "Total.Population..2018.", #Abbreviating long name
-         "Walkability.Index.Score",
-         "Least.Walkable",
-         "Below.Average.Walkable",
-         "Above.Average.Walkable",
-         "Most.Walkable",
+         "TotalHouseholds" = "Total.Family.Households",
+         "AvgHHinc" = "Average.Family.Income",
+         "MedHHinc" = "Median.Family.Income",
+         "WalkIndexScore" = "Walkability.Index.Score",
+         "LeastWalk" = "Least.Walkable",
+         "BelowAvgWalk" = "Below.Average.Walkable",
+         "AboveAvgWalk" = "Above.Average.Walkable",
+         "MostWalk" = "Most.Walkable",
          "Total.Population",
          "PopInFHA" = "Estimated.Population.Within.a.Flood.Hazard.Area", 
-         "PercentPopInFHA" = "Percentage.of.Population.Within.a.100.year.Flood.Hazard.Area")
+         "PercentPopInFHA" = "Percentage.of.Population.Within.a.100.year.Flood.Hazard.Area") %>% 
+  filter(County != "Report Location", County != "United States")
 
-class(RawNCData$Average.Family.Income)
+# Remove special characters of $ and %
+NCData_Mutate[] <- lapply(NCData_Mutate[], 
+                             function(x) gsub(pattern ='[%$,]',
+                                              '',
+                                              x, 
+                                              ignore.case = FALSE))
+
+
+
+#coerce columns as numeric
+NCData_Mutate[2:12]  <- lapply(NCData_Mutate[2:12], as.numeric) 
+
+# Check the structure to make sure the changes are satisfactory
+str(NCData_Mutate)
+```
+
+We note now that without the percent symbol, integers and percentages are now indistinguishable. We will mutate percent columns to be decimals for clarity.
+
+```{r Mutate Percents to Decimals}
+NCData <- NCData_Mutate %>% 
+  mutate(LeastWalk = LeastWalk/100,
+         BelowAvgWalk = BelowAvgWalk/100,
+         AboveAvgWalk = AboveAvgWalk/100,
+         MostWalk = MostWalk/100,
+         PercentPopInFHA = PercentPopInFHA/100) %>% 
+  select(County,
+          Total.Population,
+          TotalHouseholds,
+          AvgHHinc,
+          MedHHinc,
+          WalkIndexScore,
+          LeastWalk,
+          BelowAvgWalk,
+          AboveAvgWalk,
+          MostWalk,
+          PopInFHA,
+          PercentPopInFHA)
+
+str(NCData)
+```
+
+The data is now clean. We will save it to a new CSV and begin exploratory analysis in a new script.
+
+```{r Save File}
+write.csv(NCData, here('Data','Processed', "NCDataClean.csv"))
 ```
