@@ -1,0 +1,48 @@
+---
+title: "Spatial Analysis"
+author: "YES"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+## DATA WRANGLING
+
+### Set up your session
+
+```{r Prepare workspace, error=F, message=FALSE, warning=FALSE}
+#1. Import packages
+library(tidyverse);library(here); library(ggplot2);
+library(sf);library(mapview);library(leaflet)
+
+
+#2. Project directory
+here()
+
+```
+
+
+### Read (and filter) county features into an sf dataframe and plot
+
+
+```{r Read the county data into an sf dataframe}
+#3. Read in Counties shapefile into an sf dataframe, filtering for just NE counties
+NC_counties <- st_read(here("Data", "Spatial", "cb_2018_us_county_20m.shp")) %>%
+  filter(STATEFP == "37")
+
+#4. Reveal the CRS of the counties features
+st_crs(NC_counties)
+
+#5. Plot the data
+#View using ggplot
+ggplot(data = NC_counties) + geom_sf(aes(fill = NAME))+
+  labs(title = "Map of NC Counties")+
+  theme(legend.position =  "none")
+
+#View using mapview
+mapview(NC_counties, zcol = 'NAME', legend = FALSE)
+
+## Add a column of environmental parameter
+
+```
+

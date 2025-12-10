@@ -1,0 +1,161 @@
+---
+title: "The very basics of R"
+subtitle: "https://github.com/sytspg/SalzbergSuSlay/"
+author: "Josh Salzberg, Yitong Eric Su, and Sarah Slay"
+date: "12/12/2025"
+editor_options: 
+  chunk_output_type: console
+output:
+  
+  html_document:
+    latex_engine: xelatex
+    toc: true
+    number_sections: true
+---
+
+\newpage
+\tableofcontents 
+\newpage
+\listoftables 
+\newpage
+\listoffigures 
+\newpage
+
+```{r setup, include=FALSE}
+# Set global options for R chunks
+knitr::opts_chunk$set(
+	echo = FALSE,
+	message = FALSE,
+	warning = FALSE)
+
+# Set your working directory
+here()
+getwd()
+
+# Load your packages
+library(tidyverse)
+library(gridExtra)
+library(knitr)
+library(broom)
+library(ggcorrplot)
+library(visreg)
+library(plotly)
+library(ggrepel)
+library(ggExtra)
+
+# Set your ggplot theme
+mytheme <- theme_classic(base_size = 14) +
+  theme(axis.text = element_text(color = "black"), 
+        legend.position = "right")
+theme_set(mytheme)
+
+# Load your datasets
+
+```
+
+
+# Rationale and Research Questions
+
+Background and rationale explanation.
+
+\newpage
+
+# Dataset Information
+
+Describe the datasets we are using.
+
+\newpage
+
+# Exploratory Analysis 
+
+## Data Summary
+
+Describe the parameters/indices, their distributions, and potential correlations.
+
+\newpage
+
+# Analysis
+
+```{r}
+
+p2<-ggplot(NCData, aes(Total.Population))+
+  geom_histogram(fill="green", color="black", bins=20)+
+  geom_boxplot(width=25)+
+  labs(title="Total Population", x="Count")
+
+p3 <- ggplot(NCData, aes(TotalHouseholds))+
+  geom_histogram(fill="orange", color="black", bins=20)+
+  geom_boxplot(width=200)+
+  labs(title="Total Household Income", x="US Dollars")
+
+p5<- ggplot(NCData, aes(AvgHHinc))+
+  geom_histogram(fill="purple", color="black", bins=20)+
+  geom_boxplot(width=50)+
+  labs(title="Average Household Income", x="US Dollars")
+
+p4<-ggplot(NCData, aes(WalkIndexScore))+
+  geom_histogram(fill="lightblue", color="black", bins=20)+
+  geom_boxplot(width=50)+
+  labs(x="living-dining rooms",title="Distribution of \nliving-dining rooms")
+
+p6<-ggplot(NCData, aes(PercentPopInFHA))+
+  geom_histogram(fill="lightgreen", color="black", bins=20)+
+  geom_boxplot(width=25)+
+  labs(x="Total amenities",title="Distribution of \ntotal amenities")
+
+p1<-ggplot(NCData, aes(PercentPopInFHA))+
+  geom_histogram(fill="pink", color="black", bins=20)+
+  geom_boxplot(width=25)+
+  labs(x="Rental price",title="Distribution of \nrental price")+
+  theme(axis.text.x = element_text(angle=20, hjust=1))
+
+
+grid.arrange(p1,p2,p3,p4,p5,p6,ncol=3)
+```
+
+
+```{r, out.width="70%"}
+lane<-lane %>%
+  mutate(log_rent=log(rent), log_square_meters=log(sqmeters), total_amenities=total_amens)
+lane.subset <- lane %>% 
+  select(c( log_rent, bedrooms, living.dining, bathrooms, log_square_meters, total_amenities))
+
+testcors <- cor(lane.subset, use="complete.obs")
+ggcorrplot(testcors,method="circle",type="lower", lab=TRUE, lab_size = 3.5, colors=c("#CCFFCC","white","orange"), title="Correlation plot of variables")
+
+```
+
+
+```{r, out.width="65%"}
+lane<-lane%>%mutate(multi_use=case_when(use_type_en=="multi-use"~1, use_type_en=="residential"~0))
+bathroomswo <- lane%>%filter(bathrooms<15, sqmeters>1)
+p6<- ggplot(bathroomswo, aes(log(sqmeters), log(rent)))+
+  geom_jitter()+
+  geom_smooth( method="lm", formula=y~x, se=FALSE)+
+  labs(title="Relationship between log(square \n meters) and log(rental price)", x="log(square meters)")
+
+p7<- ggplot(lane, aes(bedrooms, log(rent)))+
+  geom_point(position="jitter")+
+  geom_smooth( method="lm", formula=y~x, se=FALSE)+
+  labs(title="Relationship between number \nof bedrooms and log(rental price)", x="bedrooms number")
+
+grid.arrange(p6,p7,ncol=2)
+```
+
+
+## Question 1: <insert specific question here and add additional subsections for additional questions below, if needed>
+
+## Question 2: 
+
+
+
+
+\newpage
+
+# Summary and Conclusions
+
+
+\newpage
+
+# References
+<add references here if relevant, otherwise delete this section> 
