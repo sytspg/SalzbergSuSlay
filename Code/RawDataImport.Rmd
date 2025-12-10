@@ -43,7 +43,8 @@ NCData_Mutate <- RawNCData %>%
          "MostWalk" = "Most.Walkable",
          "Total.Population",
          "PopInFHA" = "Estimated.Population.Within.a.Flood.Hazard.Area", 
-         "PercentPopInFHA" = "Percentage.of.Population.Within.a.100.year.Flood.Hazard.Area") %>% 
+         "PercentPopInFHA" = "Percentage.of.Population.Within.a.100.year.Flood.Hazard.Area",
+         "DailyMaxHeatIndex95Percentile" = "Days.above.95th.Percentile.of.Daily.Maximum.Heat.Index") %>% 
   filter(County != "Report Location", County != "United States", County != "North Carolina")
 
 # Remove special characters of $ and %
@@ -56,7 +57,7 @@ NCData_Mutate[] <- lapply(NCData_Mutate[],
 
 
 #coerce columns as numeric
-NCData_Mutate[2:12]  <- lapply(NCData_Mutate[2:12], as.numeric) 
+NCData_Mutate[2:13]  <- lapply(NCData_Mutate[2:13], as.numeric) 
 
 # Check the structure to make sure the changes are satisfactory
 str(NCData_Mutate)
@@ -82,7 +83,8 @@ NCData <- NCData_Mutate %>%
           AboveAvgWalk,
           MostWalk,
           PopInFHA,
-          PercentPopInFHA)
+          PercentPopInFHA,
+         DailyMaxHeatIndex95Percentile)
 
 str(NCData)
 ```

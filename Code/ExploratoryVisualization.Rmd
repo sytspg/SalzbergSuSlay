@@ -14,6 +14,7 @@ We will begin exploring our county data to understand the distributions and tend
 library(tidyverse)
 library(here)
 library(ggthemes)
+library(scales)
 here()
 NCData <- read.csv(here('Data','Processed','NCDataClean.csv'),stringsAsFactors = T)
 
@@ -59,23 +60,97 @@ We can see right off the bat that the difference in population between the small
 
 ```{r}
 PopPlot <- ggplot(data = NCData)+
-  geom_histogram(aes(x= Total.Population), show.legend = T,
-                 binwidth = 10000)+
-  labs(title = "Figure 1: Total Population Distribution",
-       subtitle = "Right Skew Confirmed; Bin Width = 10,000",
+  stat_bin(aes(x= Total.Population), binwidth=20000)+
+  labs(title = "Total Population Distribution",
+       subtitle = "Right Skew Confirmed; Bin Width = 20,000",
        x = "Total Population",
-       y = "Number of Counties") 
+       y = "Number of Counties")+
+  scale_x_continuous(labels = comma, breaks=breaks_pretty(8))+
+  my_theme
+  
 PopPlot
 ```
 
-Household incomes do not demonstrate the same magnitude in range: the minimum average household income of the counties is about a third of the maximum average household income. In the case of median household incomes, the difference is much smaller.
+Household incomes do not demonstrate the same magnitude in range: the minimum average household income of the counties is about a third of the maximum average household income. In the case of median household incomes, the difference is much smaller, and is less influenced by the largest incomes in each county.
 
 ```{r}
+IncomePlot <- ggplot(data = NCData)+
+  geom_histogram(aes(x=AvgHHinc), fill="red", alpha=0.5)+
+  geom_vline(xintercept=97676, linetype='dashed', 
+             color='red', linewidth=1)+
+  geom_histogram(aes(x=MedHHinc), fill="blue", alpha=0.5)+
+  geom_vline(xintercept=77228, linetype='dashed', 
+             color='blue', linewidth=1)+
+  labs(title = "Fig. 2: Average and Median Household Income Distributions",
+       subtitle = "Red = Average, Blue = Median \nVertical lines represent distribution's average",
+       x = "Household Income",
+       y = "Number of Counties")+
+  scale_x_continuous(labels = dollar,
+                     breaks=breaks_pretty(6))+
+  my_theme
 
+IncomePlot
 ```
 
-Walkability Index Scores and percentages of population in different designations of walkability imply that walkability across the state is low; it appears the majority of counties have half their population residing in "least walkable" and "below average walkable" conditions.
+Walkability Index Scores and percentages of residents in different designations of walkability imply that walkability across the state is low; it appears a significant proportion of counties have well over half their population residing in "least walkable" and "below average walkable" conditions. Further, a vast majority of counties have no "most walkable" conditions.
 
-Lastly, we see that approximately three quarters of counties in North Carolina have below 10% of their population living within Flood Hazard Areas. However, at least one country is living with approximately 94.5% of its population in Flood Hazard Areas.
+```{r}
+library(cowplot)
 
-Let's explore these variables visually.
+LeastWalkPlot <- ggplot(NCData, 
+                        aes(x = LeastWalk))+
+  geom_histogram(stat='bin',fill="lightblue")+
+  labs(x="% Residents in \nLeast Walkable Conditions",
+       y="# of Counties")+
+  scale_x_continuous(labels=percent, limits = c(-.05,1))+
+  scale_y_continuous(limits= c(-0.05,100))+
+  my_theme
+
+BelowAvgWalkPlot <- ggplot(NCData, 
+                           aes(BelowAvgWalk))+
+  geom_histogram(stat='bin',fill="lightblue")+
+  labs(x="% Residents in \nBelow Average Walkable Conditions",
+       y="# of Counties")+
+  scale_x_continuous(labels=percent, limits = c(-.05,1))+
+  scale_y_continuous(limits= c(-0.05,100))+
+  my_theme
+
+AboveAvgWalkPlot <- ggplot(NCData, 
+                           aes(AboveAvgWalk))+
+  geom_histogram(stat='bin',fill="lightblue")+
+  labs(x="% Residents in \nAbove Average Walkable Conditions",
+       y="# of Counties")+
+  scale_x_continuous(labels=percent, limits = c(-.05,1))+
+  scale_y_continuous(limits= c(-0.05,100))+
+  my_theme
+
+
+MostWalkPlot <- ggplot(NCData, 
+                       aes(MostWalk))+
+  geom_histogram(stat='bin',fill="lightblue")+
+  labs(x="% Residents in \nMost Walkable Conditions",
+       y="# of Counties")+
+  scale_x_continuous(labels=percent, limits = c(-.05,1))+
+  scale_y_continuous(limits= c(-0.05,100))+
+  my_theme
+
+plot_grid(LeastWalkPlot,
+          BelowAvgWalkPlot,
+          AboveAvgWalkPlot,
+          MostWalkPlot, 
+          align = 'hv',
+          axis = 'tblr')
+```
+
+Reassuringly, we see that approximately three quarters of counties in North Carolina have below 10% of their population living within Flood Hazard Areas. However, one country is living with approximately 94.5% of its population in Flood Hazard Areas.
+
+```{r}
+ResidentsinFHA <- ggplot(NCData, aes(PercentPopInFHA))+
+  geom_histogram(stat = 'bin', fill="lightblue")+
+  labs(x="% Residents in Flood Hazard Area",
+       y="# of Counties")+
+  my_theme
+ResidentsinFHA
+```
+
+Lastly, Heat Index is
