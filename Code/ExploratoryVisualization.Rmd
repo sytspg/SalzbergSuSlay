@@ -1,0 +1,81 @@
+---
+title: "ExploratoryVisualization"
+author: "jhs"
+date: "2025-12-09"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+We will begin exploring our county data to understand the distributions and tendencies. To do so, we must set up our workspace with relevant packages and import our processed data.
+
+```{r setup, echo=TRUE, include=FALSE}
+#install.packages(tidyverse);install.packages(here);install.packages(ggthemes)
+library(tidyverse)
+library(here)
+library(ggthemes)
+here()
+NCData <- read.csv(here('Data','Processed','NCDataClean.csv'),stringsAsFactors = T)
+
+my_theme <- theme_calc()  + 
+  theme(
+    #line =              element_line(),
+    #rect =              element_rect(),
+    text =              element_text(family="mono"),
+    
+    # Modified inheritance structure of text element
+    #plot.title =        element_text(),
+    #axis.title.x =      element_blank(),
+    #axis.title.y =      element_blank(),
+    #axis.text =         element_text(),
+    
+    # Modified inheritance structure of line element
+    #axis.ticks =        element_line(),
+    #panel.grid.major =  element_line(),
+    #panel.grid.minor =  element_blank(),
+    
+    # Modified inheritance structure of rect element
+    #plot.background =   element_rect(color =),
+    #panel.background =  element_rect(),
+    #legend.key =        element_rect(),
+    
+    # Modifiying legend.position
+    #legend.position = 'right',
+    
+    #complete = TRUE
+    )
+
+```
+
+With our data loaded, we can begin to explore the distributions and tendencies of our data.
+
+Calling the summary function on the data reveals the basic dimensions of the data: minimum, quartiles, median, mean and maximum.
+
+```{r}
+summary(NCData)
+```
+
+We can see right off the bat that the difference in population between the smallest and largest count is about a factor of 1,000. We can assume the distribution of counts of population is right skewed because the mean is larger than the median. The graph, figure 1 below, proves this visually.
+
+```{r}
+PopPlot <- ggplot(data = NCData)+
+  geom_histogram(aes(x= Total.Population), show.legend = T,
+                 binwidth = 10000)+
+  labs(title = "Figure 1: Total Population Distribution",
+       subtitle = "Right Skew Confirmed; Bin Width = 10,000",
+       x = "Total Population",
+       y = "Number of Counties") 
+PopPlot
+```
+
+Household incomes do not demonstrate the same magnitude in range: the minimum average household income of the counties is about a third of the maximum average household income. In the case of median household incomes, the difference is much smaller.
+
+```{r}
+
+```
+
+Walkability Index Scores and percentages of population in different designations of walkability imply that walkability across the state is low; it appears the majority of counties have half their population residing in "least walkable" and "below average walkable" conditions.
+
+Lastly, we see that approximately three quarters of counties in North Carolina have below 10% of their population living within Flood Hazard Areas. However, at least one country is living with approximately 94.5% of its population in Flood Hazard Areas.
+
+Let's explore these variables visually.

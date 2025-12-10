@@ -44,7 +44,7 @@ NCData_Mutate <- RawNCData %>%
          "Total.Population",
          "PopInFHA" = "Estimated.Population.Within.a.Flood.Hazard.Area", 
          "PercentPopInFHA" = "Percentage.of.Population.Within.a.100.year.Flood.Hazard.Area") %>% 
-  filter(County != "Report Location", County != "United States")
+  filter(County != "Report Location", County != "United States", County != "North Carolina")
 
 # Remove special characters of $ and %
 NCData_Mutate[] <- lapply(NCData_Mutate[], 
