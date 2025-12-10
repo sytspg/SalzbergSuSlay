@@ -9,7 +9,7 @@ editor_options:
 
 This raw data import relies on essential packages tidyverse and here. We verify with `here()` that our working directory is accurate. We then import the data using the read.csv() function.
 
-```{r setup, echo=TRUE, include=FALSE}
+```{r, setup, echo=TRUE, include=FALSE}
 #install.packages(tidyverse);install.packages(here)
 library(tidyverse)
 library(here)
@@ -19,7 +19,7 @@ RawNCData <- data.frame(read.csv(here('Data','Raw','NCDataPortal-RAW.csv'), skip
 
 As always, we inspect the nature of the data. We use functions head(), str(), summary(), dim(), and colnames() to view and summarize the data.
 
-```{r Exploring the Structure of the Raw Data, include=TRUE, echo=FALSE}
+```{r, Exploring-Structure-of-Raw-Data, echo=TRUE}
 head(RawNCData)
 str(RawNCData)
 summary(RawNCData)
@@ -29,7 +29,7 @@ colnames(RawNCData)
 
 On first glance we see that there are many more columns representing household income in more detail than we need. Additionally, we see that all the income columns are stored as strings. We will clean this data so that just the income columns we want are in the dataframe and that those columns are numeric before moving on to other formatting. The lapply code using gsub is based on code provided in this [StackOverflow thread](https://stackoverflow.com/questions/74461334/replace-character-values-across-several-columns-at-once).
 
-```{r Selecting Columns and Setting as Numeric, include = TRUE}
+```{r, Selecting-Columns-and-Setting-Numeric, echo=TRUE}
 # Select columns we intend to use and filter extraneous data
 NCData_Mutate <- RawNCData %>% 
   select("County" = "Indicator.Attribute",
@@ -65,7 +65,7 @@ str(NCData_Mutate)
 
 We note now that without the percent symbol, integers and percentages are now indistinguishable. We will mutate percent columns to be decimals for clarity.
 
-```{r Mutate Percents to Decimals}
+```{r Mutate-Percents-to-Decimals, echo=TRUE}
 NCData <- NCData_Mutate %>% 
   mutate(LeastWalk = LeastWalk/100,
          BelowAvgWalk = BelowAvgWalk/100,
@@ -91,6 +91,6 @@ str(NCData)
 
 The data is now clean. We will save it to a new CSV and begin exploratory analysis in a new script.
 
-```{r Save File}
+```{r, Save-File, echo=TRUE}
 write.csv(NCData, here('Data','Processed', "NCDataClean.csv"))
 ```
