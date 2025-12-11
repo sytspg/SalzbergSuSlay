@@ -56,7 +56,7 @@ Calling the summary function on the data reveals the basic dimensions of the dat
 summary(NCData)
 ```
 
-We can see right off the bat that the difference in population between the smallest and largest count is about a factor of 1,000. We can assume the distribution of counts of population is right skewed because the mean is larger than the median. The graph, figure 1 below, proves this visually.
+We can see that the difference in population between the smallest and largest count is about a factor of 1,000. We can assume the distribution of population count is right skewed because the mean is larger than the median. The graph, figure 1 below, provides a visual.
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 PopPlot <- ggplot(data = NCData)+
@@ -143,7 +143,7 @@ plot_grid(LeastWalkPlot,
           labels = "AUTO")
 ```
 
-Reassuringly, we see that approximately three quarters of counties in North Carolina have below 10% of their population living within Flood Hazard Areas. However, one country is living with approximately 94.5% of its population in Flood Hazard Areas.
+Reassuringly, we see that approximately three quarters of counties in North Carolina have below 10% of their population living within Flood Hazard Areas. However, one county's population lives approximately 94.5% in Flood Hazard Areas.
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 ResidentsinFHA <- ggplot(NCData, aes(PercentPopInFHA))+

@@ -50,6 +50,7 @@ mytheme <- theme_classic(base_size = 14) +
 theme_set(mytheme)
 
 # Load your datasets
+NCData <- read.csv(here('Data','Processed','NCDataClean.csv'),stringsAsFactors = T)
 
 ```
 
@@ -57,12 +58,23 @@ theme_set(mytheme)
 # Rationale and Research Questions
 
 Background and rationale explanation.
+The goal of our analysis is to determine whether household income is correlated with specific climate change indicators. Due to redlining and disenfranchisement, low-income households tend to be located in areas more vulnerable to climate change. Determining whether household income is correlated with indicators such as flood risk or heat index informs policy initiatives. For example, flood damage costs exceeded $53 billion after hurricane Helene (Thomae, 2024). If flood risk increases with low-income households, these vulnerable populations would bear the highest cost. Policies for floodplain buyouts should aim to reduce cost burden for low-income households. 
+In addition, extreme heat exposure worsens chronic health conditions and can lead to premature death. Areas with lower socioeconomic status have limited access to resources such as health clinics that could address heatstroke symptoms (EPA, 2024). Therefore, if low-income households have a higher number of extreme heat days, they are more likely to suffer adverse effects. 
+
+Lastly, we want to understand the distribution of climate change effects in NC. The varied topography and ecology of the state results in differing climate change impacts. Identifying counties with vulnerable populations will help decision-makers target policies to mitigate the effects of climate change.  
+
+
+We focused our analysis at the county level in North Carolina. Data was obtained for median household income and population distribution of each county, as well as climate change indicators. This data was wrangled and analyzed to answer the following questions: 
+
+1. Is household income correlated with walkability, flood risk, or heat index?
+2. Are specific counties disproportionately at risk of climate change?
+
 
 \newpage
 
 # Dataset Information
 
-Describe the datasets we are using.
+The dataset describes household income and population for all 100 counties in NC as of . Each county has its own row and is associated with several climate change indicators, such as flood hazard area. and max heat index. Each indicator has its own column for a total of 14 columns.  
 
 \newpage
 
@@ -157,5 +169,9 @@ grid.arrange(p6,p7,ncol=2)
 
 \newpage
 
-# References
-<add references here if relevant, otherwise delete this section> 
+# References (APA)
+
+Environmental Protection Agency. (2024). Climate Change and the Health of Socially Vulnerable People. EPA. https://www.epa.gov/climateimpacts/climate-change-and-health-socially-vulnerable-people 
+
+Thomae, L. (2024, December 3). Helene damage costs in NC more than $53 billion. who will pay is unclear. Carolina Public Press. https://carolinapublicpress.org/67325/helene-costs-nc-billions-unclear-who-pays/ 
+
