@@ -69,12 +69,16 @@ We focused our analysis at the county level in North Carolina. Data was obtained
 1. Is household income correlated with walkability, flood risk, or heat index?
 2. Are specific counties disproportionately at risk of climate change?
 
-
 \newpage
 
 # Dataset Information
 
-The dataset describes household income and population for all 100 counties in NC as of . Each county has its own row and is associated with several climate change indicators, such as flood hazard area. and max heat index. Each indicator has its own column for a total of 14 columns.  
+The dataset describes household income and population for all 100 counties in NC as of . Each county has its own row and is associated with several climate change indicators: 
+- Flood Hazard Area
+- Daily Max Heat Index
+- Walkability
+
+Each indicator has its own column for a total of 14 columns. Most of the data was obtained from the   
 
 \newpage
 
