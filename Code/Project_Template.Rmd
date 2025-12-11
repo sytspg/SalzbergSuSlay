@@ -105,16 +105,18 @@ p5<- ggplot(NCData, aes(AvgHHinc))+
   geom_boxplot(width=50)+
   labs(title="Average Household Income", x="US Dollars")
 
+#do we really need number of living rooms?
 p4<-ggplot(NCData, aes(WalkIndexScore))+
   geom_histogram(fill="lightblue", color="black", bins=20)+
   geom_boxplot(width=50)+
   labs(x="living-dining rooms",title="Distribution of \nliving-dining rooms")
 
+#what are we counting as amenities?
 p6<-ggplot(NCData, aes(PercentPopInFHA))+
   geom_histogram(fill="lightgreen", color="black", bins=20)+
   geom_boxplot(width=25)+
   labs(x="Total amenities",title="Distribution of \ntotal amenities")
-
+#IDK if we need rental price if we're looking at income
 p1<-ggplot(NCData, aes(PercentPopInFHA))+
   geom_histogram(fill="pink", color="black", bins=20)+
   geom_boxplot(width=25)+
