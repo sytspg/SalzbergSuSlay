@@ -68,7 +68,8 @@ NCweather_TS <- read.csv(here('Data','Processed','NCDataClean.csv'), stringsAsFa
 
 # Rationale and Research Questions
 
-The goal of our analysis is to determine whether household income is correlated with specific climate change indicators. Due to redlining and disenfranchisement, low-income households tend to be located in areas more vulnerable to climate change. Determining whether household income is correlated with indicators such as flood risk or heat index informs policy initiatives. For example, flood damage costs exceeded \$53 billion after hurricane Helene (Thomae, 2024). If flood risk increases with low-income households, these vulnerable populations would bear the highest cost. Policies for floodplain buyouts should aim to reduce cost burden for low-income households. In addition, extreme heat exposure worsens chronic health conditions and can lead to premature death. Areas with lower socioeconomic status have limited access to resources such as health clinics that could address heatstroke symptoms (EPA, 2024). Therefore, if low-income households have a higher number of extreme heat days, they are more likely to suffer adverse effects.
+The goal of our analysis is to determine whether household income is correlated with specific climate change indicators. Due to redlining and disenfranchisement, low-income households tend to be located in areas more vulnerable to climate change. Determining whether household income is correlated with indicators such as flood risk or heat index informs policy initiatives. For example, flood damage costs exceeded \$53 billion after hurricane Helene (Thomae, 2024). If flood risk increases with low-income households, these vulnerable populations would bear the highest cost. Policies for floodplain buyouts should aim to reduce cost burden for low-income households. 
+In addition, extreme heat exposure worsens chronic health conditions and can lead to premature death. Areas with lower socioeconomic status have limited access to resources such as health clinics that could address heatstroke symptoms (EPA, 2024). Therefore, if low-income households have a higher number of extreme heat days, they are more likely to suffer adverse effects. Level of walkability may also lead to worse health outcomes. People in less walkable areas have fewer opportunities to engage in physical exercise.  
 
 Lastly, we want to understand the distribution of climate change effects in NC. The varied topography and ecology of the state results in differing climate change impacts. Identifying counties with vulnerable populations will help decision-makers target policies to mitigate the effects of climate change.
 
@@ -135,18 +136,13 @@ kable(summary(SummaryKable))
 
 ## Data Distribution
 
-JOSH: Among all the indices, why we chose these four? Difference/distinctions?
+Our exploratory analysis indicates that population count is right skewed because the mean is larger than the median. The graph, figure 1A below, provides visual proof. We identified two outlier counties with populations over 1 million as Wake and Mecklenburg Counties. The significant range in county population has implications for our analysis. 
 
-Referring to the plots, describe the general distributions, explain any skewness or outliers. Especially explain Fig 1B, where the average and median income data have different skewness. Why? What does that mean to the further analyses.
+Figure 1B shows that household income does not demonstrate the same absolute magnitude in range.  However, average household income exhibits rightward skew due to the highest income households bringing averages up. For median household income, the range is much smaller, and is less influenced by the largest incomes in each county. Capturing this difference helps us understand the extent of income ranges between and within counties. 
 
-Also, for the right-skewed flood risk index, why do we want to apply a log transformation (to make the distribution normal)?
+Figure 1C demonstrates that approximately three quarters of counties in North Carolina have fewer than 10% of their population inhabiting Flood Hazard Areas. However, there are three counties with over 50% of their population residing in Flood Hazard Areas. The highest rate shown is nearly 95% of residents. To accommodate such a dramatic skew in our analysis, we apply a log transformation to normalize the distribution. 
 
-We explore here visually the distribution of the variables in more detail. 
-
-From the summary above, we could identify that the distribution of population count is right skewed because the mean is larger than the median. The graph, figure 1A below, provides the proof of this. We identified the two counties with populations over 1 million as Wake and Mecklenburg Counties. The significant range in county population has implications for our analysis discussed later. 
-Figure 1B shows that household incomes do not demonstrate the same absolute magnitude in range; however, average household incomes also exhibit rightward skew due to the highest income households drawing averages up. In the case of median household incomes, the range is much smaller, and is less influenced by the largest incomes in each county. Capturing this difference helps us understand the extent of income ranges between and within counties. 
-Figure 1C demonstrates that approximately three quarters of counties in North Carolina have below 10% of their population living within Flood Hazard Areas. However, there are three counties with over 50% of their population residing in Flood Hazard Areas; the highest rate is, as the summary table describes above, nearly 95% of residents. To accommodate such a dramatic skew in our analysis, we will eventually apply a log transformation to normalize the distribution. 
-Lastly, in Figure 1D, we explore how the count of days over the county's 95th percentile Heat Index is distributed across the state. We can see that the data approximates a normal distribution, but further analysis would be required to confirm the goodness of fit, especially given the slightly off-center mode.
+Lastly, in Figure 1D, we explore how the number of days over the county's 95th percentile Heat Index is distributed across the state. We can see that the data approximates a normal distribution, but further analysis would be required to confirm the goodness of fit, especially given the slightly off-center mode.
 
 ```{r, exploratory-plots, fig.width= 8, fig.cap="*Fig 1. Exploratory Analysis of Parameters*"}
 
@@ -191,7 +187,7 @@ DMHIPlot <- ggplot(NCData, aes(DailyMaxHeatIndex95Percentile))+
 grid.arrange(PopPlot,IncomePlot,ResidentsinFHA,DMHIPlot,ncol=2)
 ```
 
-We demonstrate below in Figure 2 that percentages of residents in different designations of walkability imply that walkability across the state is low; it appears a significant proportion of counties have well over half their population residing in "least walkable" and "below average walkable" conditions (plots A & B below). These two walkability designations approach normal distributions. Plots C & D, "above average walkable" and "most walkable," respectively, approach exponential distributions, with the majority of counties containing 0% of residents in the given walkability designation. 
+Figure 2 demonstrates the percentage of residents in different designations of walkability. Level of walkability across the state is low. It appears a significant proportion of counties have well over half their population residing in "least walkable" and "below average walkable" conditions (plots A & B below). These two walkability designations approach normal distributions. Plots C & D, "above average walkable" and "most walkable," respectively, approach exponential distributions, with the majority of counties containing 0% of residents in the given walkability designation. 
 
 ```{r, walk-plots, fig.width=8, fig.cap="*Fig 2. Distribution of the Walkability-related Indices*"}
 LeastWalkPlot <- ggplot(NCData, 
