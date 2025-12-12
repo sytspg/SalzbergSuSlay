@@ -3,26 +3,16 @@ title: "The very basics of R"
 author: "Josh Salzberg, Yitong Eric Su, and Sarah Slay"
 date: "12/12/2025"
 output:
-  pdf_document:
-    toc: true
   html_document:
-    latex_engine: xelatex
     toc: true
+    lof: true
     number_sections: true
 editor_options:
   chunk_output_type: console
 subtitle: https://github.com/sytspg/SalzbergSuSlay/
+
 ---
 
-```{=tex}
-\newpage
-\tableofcontents 
-\newpage
-\listoftables 
-\newpage
-\listoffigures 
-\newpage
-```
 ```{r setup, include=FALSE}
 # Set global options for R chunks
 knitr::opts_chunk$set(
@@ -41,6 +31,13 @@ library(visreg)
 library(plotly)
 library(ggrepel)
 library(ggExtra)
+library(scales)
+library(ggthemes)
+library(cowplot)
+library(sf)
+library(mapview)
+library(leaflet)
+library(stringr)
 
 # Set your working directory
 here()
@@ -49,23 +46,34 @@ getwd()
 # Set your ggplot theme
 mytheme <- theme_classic(base_size = 14) +
   theme(axis.text = element_text(color = "black"), 
-        legend.position = "right")
+        legend.position = "right",
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 11),
+        axis.title.x = element_text(size =10),
+        axis.title.y = element_text(size =10),
+        axis.text.x = element_text(size =8),
+        axis.text.y = element_text(size =8),
+        legend.title = element_text(size =9),
+        legend.text = element_text(size = 8),
+        legend.key.size = unit(0.5, "lines"))
 theme_set(mytheme)
+```
 
+```{r}
 # Load your datasets
-NCData <- read.csv(here('Data','Processed','NCDataClean.csv'),stringsAsFactors = T)
+NCData <- read.csv(here('Data','Processed','NCDataClean.csv'), stringsAsFactors = T)
 
 ```
 
 # Rationale and Research Questions
 
-Background and rationale explanation. The goal of our analysis is to determine whether household income is correlated with specific climate change indicators. Due to redlining and disenfranchisement, low-income households tend to be located in areas more vulnerable to climate change. Determining whether household income is correlated with indicators such as flood risk or heat index informs policy initiatives. For example, flood damage costs exceeded \$53 billion after hurricane Helene (Thomae, 2024). If flood risk increases with low-income households, these vulnerable populations would bear the highest cost. Policies for floodplain buyouts should aim to reduce cost burden for low-income households. In addition, extreme heat exposure worsens chronic health conditions and can lead to premature death. Areas with lower socioeconomic status have limited access to resources such as health clinics that could address heatstroke symptoms (EPA, 2024). Therefore, if low-income households have a higher number of extreme heat days, they are more likely to suffer adverse effects.
+The goal of our analysis is to determine whether household income is correlated with specific climate change indicators. Due to redlining and disenfranchisement, low-income households tend to be located in areas more vulnerable to climate change. Determining whether household income is correlated with indicators such as flood risk or heat index informs policy initiatives. For example, flood damage costs exceeded \$53 billion after hurricane Helene (Thomae, 2024). If flood risk increases with low-income households, these vulnerable populations would bear the highest cost. Policies for floodplain buyouts should aim to reduce cost burden for low-income households. In addition, extreme heat exposure worsens chronic health conditions and can lead to premature death. Areas with lower socioeconomic status have limited access to resources such as health clinics that could address heatstroke symptoms (EPA, 2024). Therefore, if low-income households have a higher number of extreme heat days, they are more likely to suffer adverse effects.
 
 Lastly, we want to understand the distribution of climate change effects in NC. The varied topography and ecology of the state results in differing climate change impacts. Identifying counties with vulnerable populations will help decision-makers target policies to mitigate the effects of climate change.
 
 We focused our analysis at the county level in North Carolina. Data was obtained for median household income and population distribution of each county, as well as climate change indicators. This data was wrangled and analyzed to answer the following questions:
 
-1.  Is household income correlated with walkability, flood risk, or heat index?
+1.  How do walkability, flood risk, and heat indices affect the average household income? 
 2.  Are specific counties disproportionately at risk of climate change?
 
 \newpage
@@ -92,7 +100,7 @@ The dataset describes household income and population for all 100 counties in NC
 |               `PercentPopInFHA` | Percent of county population residing in Flood Hazard Area                           |
 | `DailyMaxHeatIndex95Percentile` | Count of days per year maximum daily temperature exceeded 95th percentile, 2022-2024 |
 
-Each indicator has its own column for a total of 14 columns. Most of the data was obtained from the NCData Portal.
+Each indicator has its own column for a total of 14 columns. Most of the data was obtained from the NCData Portal (https://ncdataportal.org/), a platform that gathers social and enviromental data related to North Carolina from multiple sources (e.g., CDC, Census, etc.).
 
 \newpage
 
@@ -100,23 +108,29 @@ Each indicator has its own column for a total of 14 columns. Most of the data wa
 
 ## Data Wrangling & Summary
 
-No columns were created in the data wrangling process, only removed or cleaned cleaned. Upon download, we inspected the data using functions `head()`, `str()`, `dim()`, and `colnames()`. Notably, `str()` revealed both far more columns than we needed, and that much data was stored as strings due to non-numeric characters within the data, principally `$`, `%`, and `,`. To resolve this, we subset the data into a new dataframe, and used a combination of `lapply()` and `gsub()` code to remove the non-numeric characters in the data based on solutions from this [StackOverflow thread](https://stackoverflow.com/questions/74461334/replace-character-values-across-several-columns-at-once). With the `%` sign removed from the data, we applied a minor manipulation to convert the percentage columns into decimal form.
+No columns were created in the data wrangling process, only removed or cleaned cleaned. Upon download, we inspected the data using functions `head()`, `str()`, `dim()`, and `colnames()`. Notably, `str()` revealed both far more columns than we needed, and that much data was stored as strings due to non-numeric characters within the data, principally `$`, `%`, and `,`. To resolve this, we subset the data into a new data frame, and used a combination of `lapply()` and `gsub()` code to remove the non-numeric characters in the data based on solutions from this [StackOverflow thread](https://stackoverflow.com/questions/74461334/replace-character-values-across-several-columns-at-once). With the `%` sign removed from the data, we applied a minor manipulation to convert the percentage columns into decimal form.
 
 The table below communicates the findings from the `summary()` function; this gives us a brief understanding of the dimensions of the data.
 
 ```{r, echo=FALSE}
+
+#This table does not look good in the rendered html file. Can you try to just select a few data of interest and put them in a table manuaully?
 kable(summary(NCData))
 ```
 
-\newpage
+## Data Distribution
 
-# Analysis
+JOSH: Among all the indices, why we chose these four? Difference/distinctions?
 
-```{r, exploratory-plots}
+Referring to the plots, describe the general distributions, explain any skewness or outliers. Especially explain Fig 1B, where the average and median income data have different skewness. Why? What does that mean to the further analyses.
+
+Also, for the right-skewed flood risk index, why do we want to apply a log transformation (to make the distribution normal)?
+
+```{r, exploratory-plots, fig.width= 8, fig.cap="Fig 1. Exploratory Analysis of Parameters"}
 
 PopPlot <- ggplot(data = NCData)+
   stat_bin(aes(x= Total.Population), binwidth=20000)+
-  labs(title = "Fig 1: Total Population Distribution",
+  labs(title = "A: Total Population Distribution",
        subtitle = "Right Skew Confirmed \nBin Width = 20,000",
        x = "Total Population",
        y = "Count")+
@@ -130,7 +144,7 @@ IncomePlot <- ggplot(data = NCData)+
   geom_histogram(aes(x=MedHHinc), fill="blue", alpha=0.5)+
   geom_vline(xintercept=77228, linetype='dashed', 
              color='blue', linewidth=1)+
-  labs(title = "Fig. 2: Average and Median Household \nIncome Distributions",
+  labs(title = "B: Average and Median Household \nIncome Distributions",
        subtitle = "Red = Average, Blue = Median \nVertical lines represent distribution's average",
        x = "Household Income",
        y = "Count")+
@@ -139,7 +153,7 @@ IncomePlot <- ggplot(data = NCData)+
 
 ResidentsinFHA <- ggplot(NCData, aes(PercentPopInFHA))+
   geom_histogram(stat = 'bin', fill="lightblue")+
-  labs(title= "Fig 4: Percent of Residents in \nFlood Hazard Areas",
+  labs(title= "C: Percent of Residents in \nFlood Hazard Areas",
        x="% Residents in Flood Hazard Area",
        y="Count")+
   scale_x_continuous(labels = percent,
@@ -147,25 +161,25 @@ ResidentsinFHA <- ggplot(NCData, aes(PercentPopInFHA))+
 
 DMHIPlot <- ggplot(NCData, aes(DailyMaxHeatIndex95Percentile))+
   geom_histogram(binwidth = 1, fill="lightblue")+
-  labs(title = "Fig 5: Count of 95th Percentile \nDaily Max Heat Index Days",
+  labs(title = "D: Count of 95th Percentile \nDaily Max Heat Index Days",
        x="Number of Days over 95th Percentile",
        y="Count")+
-  scale_x_continuous(breaks=seq(5,17), limit = c(5,17))
-
-
+  scale_x_continuous(breaks=seq(5,17), limit = c(6,15))
 
 grid.arrange(PopPlot,IncomePlot,ResidentsinFHA,DMHIPlot,ncol=2)
 ```
 
-```{r, walk-plots}
+JOSH: Explain what each indices mean, and why we would prefer to use "below average walkability" in the regression analysis (talk about data normality and the actual meaning of each index), with reference to the plots.
+
+```{r, walk-plots, fig.width=8, fig.cap="Fig 2. Distribution of the Walkability-related Indices"}
 LeastWalkPlot <- ggplot(NCData, 
                         aes(x = LeastWalk))+
   geom_histogram(stat='bin',fill="lightblue")+
   labs(x="% Residents in \nLeast Walkable Conditions",
        y="# of Counties")+
   scale_x_continuous(labels=percent, limits = c(-.05,1))+
-  scale_y_continuous(limits= c(-0.05,100))+
-  my_theme
+  scale_y_continuous(limits= c(-0.05,15))+
+  mytheme
 
 BelowAvgWalkPlot <- ggplot(NCData, 
                            aes(BelowAvgWalk))+
@@ -173,8 +187,8 @@ BelowAvgWalkPlot <- ggplot(NCData,
   labs(x="% Residents in \nBelow Average Walkable Conditions",
        y="# of Counties")+
   scale_x_continuous(labels=percent, limits = c(-.05,1))+
-  scale_y_continuous(limits= c(-0.05,100))+
-  my_theme
+  scale_y_continuous(limits= c(-0.05,15))+
+  mytheme
 
 AboveAvgWalkPlot <- ggplot(NCData, 
                            aes(AboveAvgWalk))+
@@ -183,7 +197,7 @@ AboveAvgWalkPlot <- ggplot(NCData,
        y="# of Counties")+
   scale_x_continuous(labels=percent, limits = c(-.05,1))+
   scale_y_continuous(limits= c(-0.05,100))+
-  my_theme
+  mytheme
 
 
 MostWalkPlot <- ggplot(NCData, 
@@ -193,7 +207,7 @@ MostWalkPlot <- ggplot(NCData,
        y="# of Counties")+
   scale_x_continuous(labels=percent, limits = c(-.05,1))+
   scale_y_continuous(limits= c(-0.05,100))+
-  my_theme
+  mytheme
 
 plot_grid(LeastWalkPlot,
           BelowAvgWalkPlot,
@@ -204,36 +218,111 @@ plot_grid(LeastWalkPlot,
           labels = "AUTO")
 ```
 
-```{r, out.width="70%"}
-lane<-lane %>%
-  mutate(log_rent=log(rent), log_square_meters=log(sqmeters), total_amenities=total_amens)
-lane.subset <- lane %>% 
-  select(c( log_rent, bedrooms, living.dining, bathrooms, log_square_meters, total_amenities))
 
-testcors <- cor(lane.subset, use="complete.obs")
+## Question 1: \<insert specific question here and add additional subsections for additional questions below, if needed\>
+
+SARAH: I think the research questions should be presented here after the exploratory analyses. Add a few sentences to explain the rationale of choosing the indices of interest, based on the plots above :).
+
+## Question 2:
+
+\newpage
+
+# Analyses
+
+\newpage
+
+## Regression
+
+```{r echo=FALSE, out.width="70%"}
+NCData_corrplot <-NCData %>%
+  mutate(log_Flood.Index = log(PercentPopInFHA),
+         Avg.Household.Income.1000 = AvgHHinc/1000,
+         Walkability.Index = BelowAvgWalk,
+         Heat.Index = DailyMaxHeatIndex95Percentile) %>%
+  select(c(Avg.Household.Income.1000, log_Flood.Index, 
+           Walkability.Index, Heat.Index))
+
+testcors <- cor(NCData_corrplot, use="complete.obs")
 ggcorrplot(testcors,method="circle",type="lower", lab=TRUE, lab_size = 3.5, colors=c("#CCFFCC","white","orange"), title="Correlation plot of variables")
 
 ```
 
-```{r, out.width="65%"}
-lane<-lane%>%mutate(multi_use=case_when(use_type_en=="multi-use"~1, use_type_en=="residential"~0))
-bathroomswo <- lane%>%filter(bathrooms<15, sqmeters>1)
-p6<- ggplot(bathroomswo, aes(log(sqmeters), log(rent)))+
-  geom_jitter()+
-  geom_smooth( method="lm", formula=y~x, se=FALSE)+
-  labs(title="Relationship between log(square \n meters) and log(rental price)", x="log(square meters)")
 
-p7<- ggplot(lane, aes(bedrooms, log(rent)))+
-  geom_point(position="jitter")+
-  geom_smooth( method="lm", formula=y~x, se=FALSE)+
-  labs(title="Relationship between number \nof bedrooms and log(rental price)", x="bedrooms number")
+```{r eval=FALSE, include=FALSE}
 
-grid.arrange(p6,p7,ncol=2)
+Regression.Model1 <- lm(Heat.Index ~ Avg.Household.Income.1000, 
+                       data = NCData_corrplot)
+summary(Regression.Model1)
+
+Regression.Model2 <- lm(Walkability.Index ~ Avg.Household.Income.1000, 
+                       data = NCData_corrplot)
+summary(Regression.Model2)
+
 ```
 
-## Question 1: \<insert specific question here and add additional subsections for additional questions below, if needed\>
+```{r echo=FALSE, plot.width = 12}
 
-## Question 2:
+p6<- ggplot(NCData_corrplot, aes(Avg.Household.Income.1000, Heat.Index))+
+  geom_jitter()+
+  geom_smooth( method="lm", formula=y~x, se=FALSE)+
+  labs( x="Mean Household Income*10^3", y="Days above 95th Percentile Daily Max Heat")
+
+p7<- ggplot(NCData_corrplot, aes(Avg.Household.Income.1000, Walkability.Index))+
+  geom_jitter()+
+  geom_smooth( method="lm", formula=y~x, se=FALSE)+
+  labs(x="Mean Household Income*10^3", y ="Percent Population Below Avg Walkability")
+
+p8 <- ggplot(NCData_corrplot, aes(Avg.Household.Income.1000, log_Flood.Index))+
+  geom_jitter()+
+  geom_smooth( method="lm", formula=y~x, se=FALSE)+
+  labs(x="Mean Household Income*10^3", y= "log(Percent Population in Flood Hazard)")
+
+grid.arrange(p6,p7, p8,ncol=3)
+
+```
+
+
+\newpage
+
+## Spatial Analysis
+
+```{r Read the county data into an sf dataframe, plot.height= 12, plot.width=12}
+#3. Read in Counties shapefile into an sf dataframe, filtering for just NE counties
+NC_counties <- st_read(here("Data", "Spatial", "cb_2018_us_county_20m.shp")) %>%
+  filter(STATEFP == "37")
+
+# select the county
+NCData_County <- NCData %>%
+  mutate(NAME = str_sub(County, start=1, end=-11))
+
+NC_counties_with_NCData <- merge(NC_counties, NCData_County, by = "NAME")
+
+#5. Plot the data
+
+# Heat
+#View using ggplot
+p10 <- ggplot(data = NC_counties_with_NCData) + geom_sf(aes(fill = AvgHHinc))+
+  labs(title = "Mean Household Income ($)", fill = "Legend")
+
+#View using mapview
+#p10 <- mapview(NC_counties_with_NCData, zcol = 'AvgHHinc', legend = TRUE, 
+        #layer.name = "Average Income of Each County ($)")
+
+p11 <- ggplot(data = NC_counties_with_NCData) + 
+  geom_sf(aes(fill = DailyMaxHeatIndex95Percentile))+
+  labs(title = "Days above 95th Percentile \n Daily Max Heat", fill = "Legend")
+
+p12 <- ggplot(data = NC_counties_with_NCData) + 
+  geom_sf(aes(fill = PercentPopInFHA))+
+  labs(title = "Percent Population \n in Flood Hazard (%)", fill = "Legend")
+
+p13 <- ggplot(data = NC_counties_with_NCData) + 
+  geom_sf(aes(fill = BelowAvgWalk))+
+  labs(title = "Percent Population \n Below Mean Walkability (%)", fill = "Legend")
+
+grid.arrange(p10, p11, p12, p13,ncol=2)
+
+```
 
 \newpage
 
@@ -241,7 +330,7 @@ grid.arrange(p6,p7,ncol=2)
 
 \newpage
 
-# References (APA)
+# References
 
 Environmental Protection Agency. (2024). Climate Change and the Health of Socially Vulnerable People. EPA. <https://www.epa.gov/climateimpacts/climate-change-and-health-socially-vulnerable-people>
 

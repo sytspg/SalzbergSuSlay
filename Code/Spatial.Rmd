@@ -13,7 +13,7 @@ editor_options:
 ```{r Prepare workspace, error=F, message=FALSE, warning=FALSE}
 #1. Import packages
 library(tidyverse);library(here); library(ggplot2);
-library(sf);library(mapview);library(leaflet)
+library(sf);library(mapview);library(leaflet); library(stringr)
 
 
 #2. Project directory
@@ -23,7 +23,6 @@ here()
 
 
 ### Read (and filter) county features into an sf dataframe and plot
-
 
 ```{r Read the county data into an sf dataframe}
 #3. Read in Counties shapefile into an sf dataframe, filtering for just NE counties
@@ -45,4 +44,24 @@ mapview(NC_counties, zcol = 'NAME', legend = FALSE)
 ## Add a column of environmental parameter
 
 ```
+# Wrangle the dataset NCData
 
+```{r}
+# select the county
+NCData_County <- NCData %>%
+  mutate(NAME = str_sub(County, start=1, end=-11))
+
+NC_counties_with_NCData <- merge(NC_counties, NCData_County, by = "NAME")
+
+#5. Plot the data
+
+# Heat
+#View using ggplot
+ggplot(data = NC_counties_with_NCData) + geom_sf(aes(fill = AvgHHinc))+
+  labs(title = "Map of NC Counties", fill = "Average Income of Each County ($)")
+
+#View using mapview
+mapview(NC_counties_with_NCData, zcol = 'AvgHHinc', legend = TRUE, 
+        layer.name = "Average Income of Each County ($)")
+
+```
