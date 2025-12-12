@@ -1,18 +1,20 @@
 ---
 title: "The very basics of R"
-subtitle: "https://github.com/sytspg/SalzbergSuSlay/"
 author: "Josh Salzberg, Yitong Eric Su, and Sarah Slay"
 date: "12/12/2025"
-editor_options: 
-  chunk_output_type: console
 output:
-  
+  pdf_document:
+    toc: true
   html_document:
     latex_engine: xelatex
     toc: true
     number_sections: true
+editor_options:
+  chunk_output_type: console
+subtitle: https://github.com/sytspg/SalzbergSuSlay/
 ---
 
+```{=tex}
 \newpage
 \tableofcontents 
 \newpage
@@ -20,7 +22,7 @@ output:
 \newpage
 \listoffigures 
 \newpage
-
+```
 ```{r setup, include=FALSE}
 # Set global options for R chunks
 knitr::opts_chunk$set(
@@ -28,12 +30,9 @@ knitr::opts_chunk$set(
 	message = FALSE,
 	warning = FALSE)
 
-# Set your working directory
-here()
-getwd()
-
 # Load your packages
 library(tidyverse)
+library(here)
 library(gridExtra)
 library(knitr)
 library(broom)
@@ -42,6 +41,10 @@ library(visreg)
 library(plotly)
 library(ggrepel)
 library(ggExtra)
+
+# Set your working directory
+here()
+getwd()
 
 # Set your ggplot theme
 mytheme <- theme_classic(base_size = 14) +
@@ -54,83 +57,152 @@ NCData <- read.csv(here('Data','Processed','NCDataClean.csv'),stringsAsFactors =
 
 ```
 
-
 # Rationale and Research Questions
 
-Background and rationale explanation.
-The goal of our analysis is to determine whether household income is correlated with specific climate change indicators. Due to redlining and disenfranchisement, low-income households tend to be located in areas more vulnerable to climate change. Determining whether household income is correlated with indicators such as flood risk or heat index informs policy initiatives. For example, flood damage costs exceeded $53 billion after hurricane Helene (Thomae, 2024). If flood risk increases with low-income households, these vulnerable populations would bear the highest cost. Policies for floodplain buyouts should aim to reduce cost burden for low-income households. 
-In addition, extreme heat exposure worsens chronic health conditions and can lead to premature death. Areas with lower socioeconomic status have limited access to resources such as health clinics that could address heatstroke symptoms (EPA, 2024). Therefore, if low-income households have a higher number of extreme heat days, they are more likely to suffer adverse effects. 
+Background and rationale explanation. The goal of our analysis is to determine whether household income is correlated with specific climate change indicators. Due to redlining and disenfranchisement, low-income households tend to be located in areas more vulnerable to climate change. Determining whether household income is correlated with indicators such as flood risk or heat index informs policy initiatives. For example, flood damage costs exceeded \$53 billion after hurricane Helene (Thomae, 2024). If flood risk increases with low-income households, these vulnerable populations would bear the highest cost. Policies for floodplain buyouts should aim to reduce cost burden for low-income households. In addition, extreme heat exposure worsens chronic health conditions and can lead to premature death. Areas with lower socioeconomic status have limited access to resources such as health clinics that could address heatstroke symptoms (EPA, 2024). Therefore, if low-income households have a higher number of extreme heat days, they are more likely to suffer adverse effects.
 
-Lastly, we want to understand the distribution of climate change effects in NC. The varied topography and ecology of the state results in differing climate change impacts. Identifying counties with vulnerable populations will help decision-makers target policies to mitigate the effects of climate change.  
+Lastly, we want to understand the distribution of climate change effects in NC. The varied topography and ecology of the state results in differing climate change impacts. Identifying counties with vulnerable populations will help decision-makers target policies to mitigate the effects of climate change.
 
+We focused our analysis at the county level in North Carolina. Data was obtained for median household income and population distribution of each county, as well as climate change indicators. This data was wrangled and analyzed to answer the following questions:
 
-We focused our analysis at the county level in North Carolina. Data was obtained for median household income and population distribution of each county, as well as climate change indicators. This data was wrangled and analyzed to answer the following questions: 
-
-1. Is household income correlated with walkability, flood risk, or heat index?
-2. Are specific counties disproportionately at risk of climate change?
+1.  Is household income correlated with walkability, flood risk, or heat index?
+2.  Are specific counties disproportionately at risk of climate change?
 
 \newpage
 
 # Dataset Information
 
-The dataset describes household income and population for all 100 counties in NC as of . Each county has its own row and is associated with several climate change indicators: 
-- Flood Hazard Area
-- Daily Max Heat Index
-- Walkability
+The dataset describes household income and population for all 100 counties in NC as of . Each county has its own row and is associated with several climate change indicators:
 
-Each indicator has its own column for a total of 14 columns. Most of the data was obtained from the   
+*Table 1: Summary of Data*
+
+|                   Variable Name | Variable Description                                                                 |
+|-------------------------------:|:---------------------------------------|
+|                        `County` | Name of North Carolina county                                                        |
+|              `Total.Population` | Count of county population                                                           |
+|               `TotalHouseholds` | Count of county households                                                           |
+|                      `AvgHHinc` | County average household income                                                      |
+|                      `MedHHinc` | County median household income                                                       |
+|                `WalkIndexScore` | County walkability score (based on EPA Walkability Index)                            |
+|                     `LeastWalk` | Percent of population residing in area considered least walkable                     |
+|                  `BelowAvgWalk` | Percent of population residing in area considered below average walkable             |
+|                  `AboveAvgWalk` | Percent of population residing in area considered above average walkable             |
+|                      `MostWalk` | Percent of population residing in area considered most walkable                      |
+|                      `PopInFHA` | Count of county population residing in Flood Hazard Area                             |
+|               `PercentPopInFHA` | Percent of county population residing in Flood Hazard Area                           |
+| `DailyMaxHeatIndex95Percentile` | Count of days per year maximum daily temperature exceeded 95th percentile, 2022-2024 |
+
+Each indicator has its own column for a total of 14 columns. Most of the data was obtained from the NCData Portal.
 
 \newpage
 
-# Exploratory Analysis 
+# Exploratory Analysis
 
-## Data Summary
+## Data Wrangling & Summary
 
-Describe the parameters/indices, their distributions, and potential correlations.
+No columns were created in the data wrangling process, only removed or cleaned cleaned. Upon download, we inspected the data using functions `head()`, `str()`, `dim()`, and `colnames()`. Notably, `str()` revealed both far more columns than we needed, and that much data was stored as strings due to non-numeric characters within the data, principally `$`, `%`, and `,`. To resolve this, we subset the data into a new dataframe, and used a combination of `lapply()` and `gsub()` code to remove the non-numeric characters in the data based on solutions from this [StackOverflow thread](https://stackoverflow.com/questions/74461334/replace-character-values-across-several-columns-at-once). With the `%` sign removed from the data, we applied a minor manipulation to convert the percentage columns into decimal form.
+
+The table below communicates the findings from the `summary()` function; this gives us a brief understanding of the dimensions of the data.
+
+```{r, echo=FALSE}
+kable(summary(NCData))
+```
 
 \newpage
 
 # Analysis
 
-```{r}
+```{r, exploratory-plots}
 
-p2<-ggplot(NCData, aes(Total.Population))+
-  geom_histogram(fill="green", color="black", bins=20)+
-  geom_boxplot(width=25)+
-  labs(title="Total Population", x="Count")
+PopPlot <- ggplot(data = NCData)+
+  stat_bin(aes(x= Total.Population), binwidth=20000)+
+  labs(title = "Fig 1: Total Population Distribution",
+       subtitle = "Right Skew Confirmed \nBin Width = 20,000",
+       x = "Total Population",
+       y = "Count")+
+  scale_x_continuous(labels = comma, breaks=breaks_pretty(3))
+  
 
-p3 <- ggplot(NCData, aes(TotalHouseholds))+
-  geom_histogram(fill="orange", color="black", bins=20)+
-  geom_boxplot(width=200)+
-  labs(title="Total Household Income", x="US Dollars")
+IncomePlot <- ggplot(data = NCData)+
+  geom_histogram(aes(x=AvgHHinc), fill="red", alpha=0.5)+
+  geom_vline(xintercept=97676, linetype='dashed', 
+             color='red', linewidth=1)+
+  geom_histogram(aes(x=MedHHinc), fill="blue", alpha=0.5)+
+  geom_vline(xintercept=77228, linetype='dashed', 
+             color='blue', linewidth=1)+
+  labs(title = "Fig. 2: Average and Median Household \nIncome Distributions",
+       subtitle = "Red = Average, Blue = Median \nVertical lines represent distribution's average",
+       x = "Household Income",
+       y = "Count")+
+  scale_x_continuous(labels = dollar,
+                     breaks=breaks_pretty(3))
 
-p5<- ggplot(NCData, aes(AvgHHinc))+
-  geom_histogram(fill="purple", color="black", bins=20)+
-  geom_boxplot(width=50)+
-  labs(title="Average Household Income", x="US Dollars")
+ResidentsinFHA <- ggplot(NCData, aes(PercentPopInFHA))+
+  geom_histogram(stat = 'bin', fill="lightblue")+
+  labs(title= "Fig 4: Percent of Residents in \nFlood Hazard Areas",
+       x="% Residents in Flood Hazard Area",
+       y="Count")+
+  scale_x_continuous(labels = percent,
+                     breaks=breaks_pretty(3))
 
-#do we really need number of living rooms?
-p4<-ggplot(NCData, aes(WalkIndexScore))+
-  geom_histogram(fill="lightblue", color="black", bins=20)+
-  geom_boxplot(width=50)+
-  labs(x="living-dining rooms",title="Distribution of \nliving-dining rooms")
-
-#what are we counting as amenities?
-p6<-ggplot(NCData, aes(PercentPopInFHA))+
-  geom_histogram(fill="lightgreen", color="black", bins=20)+
-  geom_boxplot(width=25)+
-  labs(x="Total amenities",title="Distribution of \ntotal amenities")
-#IDK if we need rental price if we're looking at income
-p1<-ggplot(NCData, aes(PercentPopInFHA))+
-  geom_histogram(fill="pink", color="black", bins=20)+
-  geom_boxplot(width=25)+
-  labs(x="Rental price",title="Distribution of \nrental price")+
-  theme(axis.text.x = element_text(angle=20, hjust=1))
+DMHIPlot <- ggplot(NCData, aes(DailyMaxHeatIndex95Percentile))+
+  geom_histogram(binwidth = 1, fill="lightblue")+
+  labs(title = "Fig 5: Count of 95th Percentile \nDaily Max Heat Index Days",
+       x="Number of Days over 95th Percentile",
+       y="Count")+
+  scale_x_continuous(breaks=seq(5,17), limit = c(5,17))
 
 
-grid.arrange(p1,p2,p3,p4,p5,p6,ncol=3)
+
+grid.arrange(PopPlot,IncomePlot,ResidentsinFHA,DMHIPlot,ncol=2)
 ```
 
+```{r, walk-plots}
+LeastWalkPlot <- ggplot(NCData, 
+                        aes(x = LeastWalk))+
+  geom_histogram(stat='bin',fill="lightblue")+
+  labs(x="% Residents in \nLeast Walkable Conditions",
+       y="# of Counties")+
+  scale_x_continuous(labels=percent, limits = c(-.05,1))+
+  scale_y_continuous(limits= c(-0.05,100))+
+  my_theme
+
+BelowAvgWalkPlot <- ggplot(NCData, 
+                           aes(BelowAvgWalk))+
+  geom_histogram(stat='bin',fill="lightblue")+
+  labs(x="% Residents in \nBelow Average Walkable Conditions",
+       y="# of Counties")+
+  scale_x_continuous(labels=percent, limits = c(-.05,1))+
+  scale_y_continuous(limits= c(-0.05,100))+
+  my_theme
+
+AboveAvgWalkPlot <- ggplot(NCData, 
+                           aes(AboveAvgWalk))+
+  geom_histogram(stat='bin',fill="lightblue")+
+  labs(x="% Residents in \nAbove Average Walkable Conditions",
+       y="# of Counties")+
+  scale_x_continuous(labels=percent, limits = c(-.05,1))+
+  scale_y_continuous(limits= c(-0.05,100))+
+  my_theme
+
+
+MostWalkPlot <- ggplot(NCData, 
+                       aes(MostWalk))+
+  geom_histogram(stat='bin',fill="lightblue")+
+  labs(x="% Residents in \nMost Walkable Conditions",
+       y="# of Counties")+
+  scale_x_continuous(labels=percent, limits = c(-.05,1))+
+  scale_y_continuous(limits= c(-0.05,100))+
+  my_theme
+
+plot_grid(LeastWalkPlot,
+          BelowAvgWalkPlot,
+          AboveAvgWalkPlot,
+          MostWalkPlot, 
+          align = 'hv',
+          axis = 'tblr',
+          labels = "AUTO")
+```
 
 ```{r, out.width="70%"}
 lane<-lane %>%
@@ -142,7 +214,6 @@ testcors <- cor(lane.subset, use="complete.obs")
 ggcorrplot(testcors,method="circle",type="lower", lab=TRUE, lab_size = 3.5, colors=c("#CCFFCC","white","orange"), title="Correlation plot of variables")
 
 ```
-
 
 ```{r, out.width="65%"}
 lane<-lane%>%mutate(multi_use=case_when(use_type_en=="multi-use"~1, use_type_en=="residential"~0))
@@ -160,24 +231,18 @@ p7<- ggplot(lane, aes(bedrooms, log(rent)))+
 grid.arrange(p6,p7,ncol=2)
 ```
 
+## Question 1: \<insert specific question here and add additional subsections for additional questions below, if needed\>
 
-## Question 1: <insert specific question here and add additional subsections for additional questions below, if needed>
-
-## Question 2: 
-
-
-
+## Question 2:
 
 \newpage
 
 # Summary and Conclusions
 
-
 \newpage
 
 # References (APA)
 
-Environmental Protection Agency. (2024). Climate Change and the Health of Socially Vulnerable People. EPA. https://www.epa.gov/climateimpacts/climate-change-and-health-socially-vulnerable-people 
+Environmental Protection Agency. (2024). Climate Change and the Health of Socially Vulnerable People. EPA. <https://www.epa.gov/climateimpacts/climate-change-and-health-socially-vulnerable-people>
 
-Thomae, L. (2024, December 3). Helene damage costs in NC more than $53 billion. who will pay is unclear. Carolina Public Press. https://carolinapublicpress.org/67325/helene-costs-nc-billions-unclear-who-pays/ 
-
+Thomae, L. (2024, December 3). Helene damage costs in NC more than \$53 billion. who will pay is unclear. Carolina Public Press. <https://carolinapublicpress.org/67325/helene-costs-nc-billions-unclear-who-pays/>

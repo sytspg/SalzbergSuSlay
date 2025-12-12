@@ -18,34 +18,10 @@ library(scales)
 here()
 NCData <- read.csv(here('Data','Processed','NCDataClean.csv'),stringsAsFactors = T)
 
-my_theme <- theme_calc()  + 
-  theme(
-    #line =              element_line(),
-    #rect =              element_rect(),
-    text =              element_text(family="mono"),
-    
-    # Modified inheritance structure of text element
-    #plot.title =        element_text(),
-    #axis.title.x =      element_blank(),
-    #axis.title.y =      element_blank(),
-    #axis.text =         element_text(),
-    
-    # Modified inheritance structure of line element
-    #axis.ticks =        element_line(),
-    #panel.grid.major =  element_line(),
-    #panel.grid.minor =  element_blank(),
-    
-    # Modified inheritance structure of rect element
-    #plot.background =   element_rect(color =),
-    #panel.background =  element_rect(),
-    #legend.key =        element_rect(),
-    
-    # Modifiying legend.position
-    #legend.position = 'right',
-    
-    #complete = TRUE
-    )
-
+mytheme <- theme_classic(base_size = 14) +
+  theme(axis.text = element_text(color = "black"), 
+        legend.position = "right")
+theme_set(mytheme)
 ```
 
 With our data loaded, we can begin to explore the distributions and tendencies of our data.
