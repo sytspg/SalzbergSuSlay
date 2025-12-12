@@ -110,12 +110,20 @@ Each indicator has its own column for a total of 14 columns. Most of the data wa
 
 No columns were created in the data wrangling process, only removed or cleaned cleaned. Upon download, we inspected the data using functions `head()`, `str()`, `dim()`, and `colnames()`. Notably, `str()` revealed both far more columns than we needed, and that much data was stored as strings due to non-numeric characters within the data, principally `$`, `%`, and `,`. To resolve this, we subset the data into a new data frame, and used a combination of `lapply()` and `gsub()` code to remove the non-numeric characters in the data based on solutions from this [StackOverflow thread](https://stackoverflow.com/questions/74461334/replace-character-values-across-several-columns-at-once). With the `%` sign removed from the data, we applied a minor manipulation to convert the percentage columns into decimal form.
 
-The table below communicates the findings from the `summary()` function; this gives us a brief understanding of the dimensions of the data.
+The table below communicates the findings from the `summary()` function applied to selected variables; this gives us a brief understanding of the dimensions of the data.
 
 ```{r, echo=FALSE}
 
 #This table does not look good in the rendered html file. Can you try to just select a few data of interest and put them in a table manuaully?
-kable(summary(NCData))
+SummaryKable <- NCData %>% 
+  select(Total.Population,
+         AvgHHinc,
+         MedHHinc,
+         WalkIndexScore,
+         PopInFHA,
+         PercentPopInFHA)
+
+kable(summary(SummaryKable))
 ```
 
 ## Data Distribution
@@ -126,7 +134,14 @@ Referring to the plots, describe the general distributions, explain any skewness
 
 Also, for the right-skewed flood risk index, why do we want to apply a log transformation (to make the distribution normal)?
 
-```{r, exploratory-plots, fig.width= 8, fig.cap="Fig 1. Exploratory Analysis of Parameters"}
+We explore here visually the distribution of the variables in more detail. 
+
+From the summary above, we could identify that the distribution of population count is right skewed because the mean is larger than the median. The graph, figure 1A below, provides the proof of this. We identified the two counties with populations over 1 million as Wake and Mecklenburg Counties. The significant range in county population has implications for our analysis discussed later. 
+Figure 1B shows that household incomes do not demonstrate the same absolute magnitude in range; however, average household incomes also exhibit rightward skew due to the highest income households drawing averages up. In the case of median household incomes, the range is much smaller, and is less influenced by the largest incomes in each county. Capturing this difference helps us understand the extent of income ranges between and within counties. 
+Figure 1C demonstrates that approximately three quarters of counties in North Carolina have below 10% of their population living within Flood Hazard Areas. However, there are three counties with over 50% of their population residing in Flood Hazard Areas; the highest rate is, as the summary table describes above, nearly 95% of residents. To accommodate such a dramatic skew in our analysis, we will eventually apply a log transformation to normalize the distribution. 
+Lastly, in Figure 1D, we explore how the count of days over the county's 95th percentile Heat Index is distributed across the state. We can see that the data approximates a normal distribution, but further analysis would be required to confirm the goodness of fit, especially given the slightly off-center mode.
+
+```{r, exploratory-plots, fig.width= 8, fig.cap="*Fig 1. Exploratory Analysis of Parameters*"}
 
 PopPlot <- ggplot(data = NCData)+
   stat_bin(aes(x= Total.Population), binwidth=20000)+
@@ -169,9 +184,9 @@ DMHIPlot <- ggplot(NCData, aes(DailyMaxHeatIndex95Percentile))+
 grid.arrange(PopPlot,IncomePlot,ResidentsinFHA,DMHIPlot,ncol=2)
 ```
 
-JOSH: Explain what each indices mean, and why we would prefer to use "below average walkability" in the regression analysis (talk about data normality and the actual meaning of each index), with reference to the plots.
+We demonstrate below in Figure 2 that percentages of residents in different designations of walkability imply that walkability across the state is low; it appears a significant proportion of counties have well over half their population residing in "least walkable" and "below average walkable" conditions (plots A & B below). These two walkability designations approach normal distributions. Plots C & D, "above average walkable" and "most walkable," respectively, approach exponential distributions, with the majority of counties containing 0% of residents in the given walkability designation. 
 
-```{r, walk-plots, fig.width=8, fig.cap="Fig 2. Distribution of the Walkability-related Indices"}
+```{r, walk-plots, fig.width=8, fig.cap="*Fig 2. Distribution of the Walkability-related Indices*"}
 LeastWalkPlot <- ggplot(NCData, 
                         aes(x = LeastWalk))+
   geom_histogram(stat='bin',fill="lightblue")+
