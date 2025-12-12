@@ -237,11 +237,17 @@ plot_grid(LeastWalkPlot,
 ```
 
 
-## Question 1: \<insert specific question here and add additional subsections for additional questions below, if needed\>
+## Question 1: Does average household income correlate with walkability, flood risk, and heat indices? 
+
+H0:  There is no significant difference between walkability, flood risk, and heat index based on household income.
+HA: There is a significant difference between walkability, flood risk, and heat index based on household income.
+
+Prior to analysis, we identified an average household income of 75k/yr statewide. 
+
+## Question 2: Are specific counties disproportionately at risk of climate change?
 
 SARAH: I think the research questions should be presented here after the exploratory analyses. Add a few sentences to explain the rationale of choosing the indices of interest, based on the plots above :).
 
-## Question 2:
 
 \newpage
 
@@ -344,11 +350,8 @@ grid.arrange(p10, p11, p12, p13,ncol=2)
 
 \newpage
 
-## Time Series
-
-
-
 # Summary and Conclusions
+
 
 \newpage
 
