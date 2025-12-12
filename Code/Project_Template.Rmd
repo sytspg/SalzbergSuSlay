@@ -74,16 +74,16 @@ Lastly, we want to understand the distribution of climate change effects in NC. 
 
 We focused our analysis at the county level in North Carolina. Data was obtained for median household income and population distribution of each county, as well as climate change indicators. This data was wrangled and analyzed to answer the following questions:
 
-1.  How do walkability, flood risk, and heat indices affect the average household income? 
+1.  Does average household income correlate with walkability, flood risk, and heat indices? 
 2.  Are specific counties disproportionately at risk of climate change?
 
 \newpage
 
 # Dataset Information
 
-## NC Data Portal 
+We obtained data from the NC Data Portal (https://ncdataportal.org/), a platform that gathers social and enviromental data related to North Carolina from government entities. By selecting specific parameters, we built a custom dataset. 
 
-This dataset describes household income and population for all 100 counties in NC as of . Each county has its own row and is associated with several climate change indicators:
+Our custom dataset describes household income and population for all 100 counties in NC using ACS estimates from 2019-2023. Data for flood hazard area was sourced from the EPA based on 2020 measurements. Each indicator has its own column for a total of 14 columns (Table 1). 
 
 
 *Table 1: Summary of Data*
@@ -104,15 +104,12 @@ This dataset describes household income and population for all 100 counties in N
 |               `PercentPopInFHA` | Percent of county population residing in Flood Hazard Area                           |
 | `DailyMaxHeatIndex95Percentile` | Count of days per year maximum daily temperature exceeded 95th percentile, 2022-2024 |
 
-Each indicator has its own column for a total of 14 columns. Most of the data was obtained from the NC Data Portal (https://ncdataportal.org/), a platform that gathers social and enviromental data related to North Carolina from multiple sources (e.g., CDC, Census, etc.).
 
 \newpage
 
-## Time series
-
 ## Census USA counties shapefile (cb_2018_us_county_20m.shp)
 
-USA counties shapefile, filtering for just the NC features (FIPS: 37). This dataset provides
+USA counties shapefile: this dataset provides mapping information for US counties and is filtered for just the NC counties (FIPS: 37).
 
 # Exploratory Analysis
 
@@ -120,7 +117,7 @@ USA counties shapefile, filtering for just the NC features (FIPS: 37). This data
 
 No columns were created in the data wrangling process, only removed or cleaned cleaned. Upon download, we inspected the data using functions `head()`, `str()`, `dim()`, and `colnames()`. Notably, `str()` revealed both far more columns than we needed, and that much data was stored as strings due to non-numeric characters within the data, principally `$`, `%`, and `,`. To resolve this, we subset the data into a new data frame, and used a combination of `lapply()` and `gsub()` code to remove the non-numeric characters in the data based on solutions from this [StackOverflow thread](https://stackoverflow.com/questions/74461334/replace-character-values-across-several-columns-at-once). With the `%` sign removed from the data, we applied a minor manipulation to convert the percentage columns into decimal form.
 
-The table below communicates the findings from the `summary()` function applied to selected variables; this gives us a brief understanding of the dimensions of the data.
+The table below communicates the findings from the `summary()` function applied to selected variables which gives us a brief understanding of the data dimensions.
 
 ```{r, echo=FALSE}
 
