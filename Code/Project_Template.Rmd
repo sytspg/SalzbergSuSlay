@@ -62,6 +62,7 @@ theme_set(mytheme)
 ```{r}
 # Load your datasets
 NCData <- read.csv(here('Data','Processed','NCDataClean.csv'), stringsAsFactors = T)
+NCweather_TS <- read.csv(here('Data','Processed','NCDataClean.csv'), stringsAsFactors = T)
 
 ```
 
@@ -80,7 +81,10 @@ We focused our analysis at the county level in North Carolina. Data was obtained
 
 # Dataset Information
 
-The dataset describes household income and population for all 100 counties in NC as of . Each county has its own row and is associated with several climate change indicators:
+## NC Data Portal 
+
+This dataset describes household income and population for all 100 counties in NC as of . Each county has its own row and is associated with several climate change indicators:
+
 
 *Table 1: Summary of Data*
 
@@ -100,9 +104,15 @@ The dataset describes household income and population for all 100 counties in NC
 |               `PercentPopInFHA` | Percent of county population residing in Flood Hazard Area                           |
 | `DailyMaxHeatIndex95Percentile` | Count of days per year maximum daily temperature exceeded 95th percentile, 2022-2024 |
 
-Each indicator has its own column for a total of 14 columns. Most of the data was obtained from the NCData Portal (https://ncdataportal.org/), a platform that gathers social and enviromental data related to North Carolina from multiple sources (e.g., CDC, Census, etc.).
+Each indicator has its own column for a total of 14 columns. Most of the data was obtained from the NC Data Portal (https://ncdataportal.org/), a platform that gathers social and enviromental data related to North Carolina from multiple sources (e.g., CDC, Census, etc.).
 
 \newpage
+
+## Time series
+
+## Census USA counties shapefile (cb_2018_us_county_20m.shp)
+
+USA counties shapefile, filtering for just the NC features (FIPS: 37). This dataset provides
 
 # Exploratory Analysis
 
@@ -286,7 +296,7 @@ grid.arrange(p6,p7, p8,ncol=3)
 
 ## Spatial Analysis
 
-```{r Read the county data into an sf dataframe, plot.height= 12, plot.width=12}
+```{r Read the county data into an sf dataframe, echo=FALSE, plot.height=12, plot.width=12}
 #3. Read in Counties shapefile into an sf dataframe, filtering for just NE counties
 NC_counties <- st_read(here("Data", "Spatial", "cb_2018_us_county_20m.shp")) %>%
   filter(STATEFP == "37")
@@ -325,6 +335,10 @@ grid.arrange(p10, p11, p12, p13,ncol=2)
 ```
 
 \newpage
+
+## Time Series
+
+
 
 # Summary and Conclusions
 

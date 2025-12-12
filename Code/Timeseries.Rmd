@@ -1,0 +1,122 @@
+---
+title: "Time Series Analysis"
+author: "Yitong Eric Su"
+date: "December 12, 2025"
+output: pdf_document
+geometry: margin=2.54cm
+editor_options: 
+  chunk_output_type: console
+---
+
+## OVERVIEW
+
+This exercise accompanies the lessons in Environmental Data Analytics on generalized linear models. 
+
+```{r message=FALSE, warning=FALSE}
+#1 Check working directory
+library(here)
+here()
+getwd()
+
+#2 Load the packages
+library(tidyverse)
+library(lubridate)
+library(zoo)
+library(trend)
+library(tseries)
+library(ggplot2)
+library(Kendall)
+
+#2 Set theme
+mytheme <- theme_classic(base_size = 14) +
+  theme(axis.text = element_text(color = "black"), 
+        legend.position = "right")
+theme_set(mytheme)
+
+NCweather_TS <- read.csv(here('Data','Raw','NOAA_NCweather_19952024.csv'), stringsAsFactors = T)
+
+
+```
+
+Below I wrangled the data and prepare for the time series analysis.
+
+```{r}
+
+#3 Set date class
+NCweather_TS$DATE <- as.Date(
+  NCweather_TS$DATE, format = "%Y/%m/%d")
+
+Days_19952024 <- as.data.frame(seq.Date(from = as.Date("1995/01/01"),
+                                 to = as.Date("2024/12/1"), by = "month"))
+colnames(Days_19952024) <- "DATE"
+SGSTAT_data_monthly.monthly <- left_join(Days_19952024, NCweather_TS)
+
+NCweather_TS$PRCP <- na.approx(NCweather_TS$PRCP)
+NCweather_TS$TAVG <- na.approx(NCweather_TS$TAVG)
+
+NCweather_TS.filtered <- NCweather_TS%>%
+  filter(PRCP<500)
+
+ggplot(NCweather_TS.filtered, aes(DATE, PRCP, color= COUNTY))+
+  geom_line()+
+  geom_smooth(method = "loess")+
+  labs(y = "Average Monthly Precipitation (mm)", x = "Year")
+
+ggplot(NCweather_TS, aes(DATE, TAVG, color= COUNTY))+
+  geom_line()+
+  geom_smooth(method = "lm")+
+  labs(y = "Average Annual Temperature (°C)", x = "Year")
+
+f_year <- year(first(NCweather_TS$DATE))
+f_month <- month(first(NCweather_TS$DATE))
+
+NCweather_OR <- NCweather_TS %>%
+  filter(COUNTY == "ORANGE")
+
+NCweather_OR$TAVG <- na.approx(NCweather_OR$TAVG)
+
+NC.monthly.or.ts <- ts(NCweather_OR$TAVG,
+                               start=c(f_year, f_month),
+                               frequency = 12)
+
+NC.monthly.or.ts_decomp <- stl(NC.monthly.or.ts, s.window = "periodic")
+plot(NC.monthly.or.ts_decomp)
+
+NC.monthly.or.ts_trend <- SeasonalMannKendall(NC.monthly.or.ts)
+summary(NC.monthly.or.ts_trend)
+
+
+NCweather_WA <- NCweather_TS %>%
+  filter(COUNTY == "WAKE")
+
+NCweather_WA$TAVG <- na.approx(NCweather_WA$TAVG)
+
+NC.monthly.wa.ts <- ts(NCweather_WA$TAVG,
+                               start=c(f_year, f_month),
+                               frequency = 12)
+
+NC.monthly.wa.ts_decomp <- stl(NC.monthly.wa.ts, s.window = "periodic")
+plot(NC.monthly.wa.ts_decomp)
+
+NCweather_HY <- NCweather_TS %>%
+  filter(COUNTY == "ROBESON")
+
+NCweather_HY$TAVG <- na.approx(NCweather_HY$TAVG)
+
+NC.monthly.hy.ts <- ts(NCweather_HY$TAVG,
+                               start=c(f_year, f_month),
+                               frequency = 12)
+
+NC.monthly.hy.ts_decomp <- stl(NC.monthly.hy.ts, s.window = "periodic")
+plot(NC.monthly.hy.ts_decomp)
+
+ggplot(NCweather_OR, aes(DATE, TAVG, color= COUNTY))+
+  geom_line()+
+  geom_smooth(method = "lm")+
+  labs(y = "Average Annual Temperature (°C)", x = "Year")
+
+
+```
+
+
+
