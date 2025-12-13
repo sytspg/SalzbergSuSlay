@@ -119,7 +119,9 @@ USA counties shapefile (cb_2018_us_county_20m.shp): this dataset provides mappin
 
 No columns were created in the data wrangling process, only removed or cleaned cleaned. Upon download, we inspected the data using functions `head()`, `str()`, `dim()`, and `colnames()`. Notably, `str()` revealed both far more columns than we needed, and that much data was stored as strings due to non-numeric characters within the data, principally `$`, `%`, and `,`. To resolve this, we subset the data into a new data frame, and used a combination of `lapply()` and `gsub()` code to remove the non-numeric characters in the data based on solutions from this [StackOverflow thread](https://stackoverflow.com/questions/74461334/replace-character-values-across-several-columns-at-once). With the `%` sign removed from the data, we applied a minor manipulation to convert the percentage columns into decimal form.
 
-The table below communicates the findings from the `summary()` function applied to selected variables which gives us a brief understanding of the data dimensions.
+Table 2 below communicates the findings from the `summary()` function applied to selected variables which gives us a brief understanding of the data dimensions.
+
+*Table 2: Summary of selected variables*
 
 ```{r, echo=FALSE}
 
@@ -398,7 +400,9 @@ plot_grid(p10, p11, p12, p13,
 
 # Limitations and further research directions
 
+So far we have explored the relationships between climate vulnerability and economic stability in North Carolina. We do recognize that one limitation of our study is the data sources. Since we obtained the database from an indirect source (NC Data Portal), the indices might not be under the same time frame, and thus, the findings might not be valid under all occasions. Though we both strong correlations and spatial distribution as evidence to support the findings, it would be better to look into the relationships under different spatial and temporal scales.
 
+For further analyses, we would be interested in seeing the changes in time series data. NOAA and other weather-monitoring institutions provide reliable long-term climate and weather data collected at weather stations across the country through their online portal (https://www.ncei.noaa.gov/cdo-web/). With the time series analyses, we could better understand how climate change is affecting the local weather and whether certain counties are disproportionally affected by the changes.
 
 # Summary and Conclusions
 
@@ -407,7 +411,6 @@ Our analysis indicates that walkability and high heat index days/yr increase sli
 We can also reject the null hypothesis for question two as the maps highlight specific counties at high risk of climate change. The percent population in flood hazard map shows that only coastal counties have a high proportion of residents at risk for flooding. Other counties further inland show minimal populations in flood-prone areas. In addition, counties on the coast had more max heat days than counties further inland. This difference is likely due to elevation increase from east to west. Several counties on the coast and in the piedmont had low walkability scores, although walkability distribution was inconsistent. 
 
 In conclusion, decision-makers should consider these climate vulnerability indicators when designing policies. Targeted policies for high-risk counties would save costs and have more effective outcomes. However, further research is required beyond the county level. Although household income did not correlate with flood hazard in our analysis, a relationship may appear if the analysis was conducted within counties or regionally.  
-
 
 \newpage
 
