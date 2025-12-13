@@ -110,7 +110,7 @@ Our custom dataset describes household income and population for all 100 countie
 
 ## Census USA counties shapefile (cb_2018_us_county_20m.shp)
 
-USA counties shapefile: this dataset provides mapping information for US counties and is filtered for just the NC counties (FIPS: 37).
+USA counties shapefile: this dataset provides mapping information for US counties and is filtered for to isolate the NC counties (FIPS: 37).
 
 # Exploratory Analysis
 
@@ -271,6 +271,8 @@ ggcorrplot(testcors,method="circle",type="lower", lab=TRUE, lab_size = 3.5, colo
 
 ```
 
+## Correlation Plot
+The correlation plot shows that walkability has the highest correlation with average income at 0.36. Heat index is also correlated with average income at 0.22. Both correlations are positive, meaning that walkability and high heat days increase with average income. Conversely, flooding is negatively correlated with avearge household income. None of the correlations are particularly strong across all NC counties. It should be noted that the correlation plot does not evaluate statistical significance of these relationships.
 
 ```{r eval=FALSE, include=FALSE}
 
@@ -282,7 +284,20 @@ Regression.Model2 <- lm(Walkability.Index ~ Avg.Household.Income.1000,
                        data = NCData_corrplot)
 summary(Regression.Model2)
 
+Regression.Model3 <- lm(log_Flood.Index ~ Avg.Household.Income.1000, 
+                       data = NCData_corrplot)
+summary(Regression.Model3)
+
 ```
+## Regression Model 1
+This regression modeled the relationship between average household income and heat index. According to the regression, average income is positively correlated with heat index. The p-value for the coefficient was statistically significant (p = 0.0257) but the R-squared value was only 0.0497, indicating a weak relationship.  
+
+## Regression Model 2
+This regression assessed correlation between average household income and walkability. These variables are slightly positively correlated and the correlation is statistically significant (p = 0.000284). The increase in walkability with household income is a stronger relationship than heat index with an R-squared value of 0.1175.  
+
+## Regression Model 3
+This regression examined the relationship between average household income and flood hazard area. These variables show no statistically significant correlation (p = 0.1567), but the R-squared value only explained ~2% of the relationship.
+
 
 ```{r echo=FALSE, plot.width = 12}
 
@@ -304,7 +319,8 @@ p8 <- ggplot(NCData_corrplot, aes(Avg.Household.Income.1000, log_Flood.Index))+
 grid.arrange(p6,p7, p8,ncol=3)
 
 ```
-
+##Regression Plots
+These plots visualize the regressions performed for the three climate change indicators and average household income. 
 
 \newpage
 
@@ -347,10 +363,18 @@ p13 <- ggplot(data = NC_counties_with_NCData) +
 grid.arrange(p10, p11, p12, p13,ncol=2)
 
 ```
+## NC County Maps
+The spatial analysis visualizes the distribution of average household income alongside the climate change indicators. Mapping the data highlights counties of concern for each indicator. Higher values are shown in dark blue while lower values are shown in light blue. 
+
 
 \newpage
 
 # Summary and Conclusions
+Our analysis indicates that walkability and high heat index days/yr increase slightly with average household income. These relationships were statistically significant at a p = 0.05 level. Therefore, we can partially reject the null hypothesis for research question one. The rejection is partial because percent population in flood hazard areas does not depend on average income at the county level. These findings contradict our initial assumption that low-income areas would have lower walkability and more heat days. 
+
+We can also reject the null hypothesis for question two as the maps highlight specific counties at high risk of climate change. The percent population in flood hazard map shows that only coastal counties have a high proportion of residents at risk for flooding. Other counties further inland show minimal populations in flood-prone areas. In addition, counties on the coast had more max heat days than counties further inland. This difference is likely due to elevation increase from east to west. Several counties on the coast and in the piedmont had low walkability scores, although walkability distribution was inconsistent. 
+
+In conclusion, decision-makers should consider these climate change indicators when designing policies. Targeted policies for high-risk counties would save costs and have more effective outcomes. However, further research is required beyond the county level. Although household income did not correlate with flood hazard in our analysis, a relationship may appear if the analysis was conducted within counties or regionally.  
 
 
 \newpage
