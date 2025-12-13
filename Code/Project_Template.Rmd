@@ -217,7 +217,6 @@ AboveAvgWalkPlot <- ggplot(NCData,
   scale_y_continuous(limits= c(-0.05,100))+
   mytheme
 
-
 MostWalkPlot <- ggplot(NCData, 
                        aes(MostWalk))+
   geom_histogram(stat='bin',fill="lightblue")+
@@ -227,7 +226,7 @@ MostWalkPlot <- ggplot(NCData,
   scale_y_continuous(limits= c(-0.05,100))+
   mytheme
 
-plot_grid(LeastWalkPlot,
+plot_arrange(LeastWalkPlot,
           BelowAvgWalkPlot,
           AboveAvgWalkPlot,
           MostWalkPlot, 
@@ -239,15 +238,16 @@ plot_grid(LeastWalkPlot,
 
 ## Question 1: Does average household income correlate with walkability, flood risk, and heat indices? 
 
-H0:  There is no significant difference between walkability, flood risk, and heat index based on household income.
-HA: There is a significant difference between walkability, flood risk, and heat index based on household income.
+*H0:* There is no significant difference between walkability, flood risk, and heat index based on household income.
+*HA:* There is a significant difference between walkability, flood risk, and heat index based on household income.
 
-Prior to analysis, we identified an average household income of 75k/yr statewide. 
+We identified an average household income of 75k/yr statewide. We also visualized that the majority of households do not live in walkable areas, which makes sense based on the state's car-centric infrastructure. Most counties also had around 11 days of high heat per year and have less than 20% of residents living in flood zones.  
 
 ## Question 2: Are specific counties disproportionately at risk of climate change?
+*H0:* There is no significant difference in climate risk between counties.
+*HA:* There is a significant difference in climate risk between counties.
 
-SARAH: I think the research questions should be presented here after the exploratory analyses. Add a few sentences to explain the rationale of choosing the indices of interest, based on the plots above :).
-
+Prior to analysis, we predict that counties closer to the coast are more at risk of climate change. These areas are subject to shifting coastlines, flooding, and hurricanes that will intensify with climate change. 
 
 \newpage
 
