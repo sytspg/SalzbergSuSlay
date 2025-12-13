@@ -68,12 +68,13 @@ NCweather_TS <- read.csv(here('Data','Processed','NCDataClean.csv'), stringsAsFa
 
 # Rationale and Research Questions
 
-The goal of our analysis is to determine whether household income is correlated with specific climate change indicators. Due to redlining and disenfranchisement, low-income households tend to be located in areas more vulnerable to climate change. Determining whether household income is correlated with indicators such as flood risk or heat index informs policy initiatives. For example, flood damage costs exceeded \$53 billion after hurricane Helene (Thomae, 2024). If flood risk increases with low-income households, these vulnerable populations would bear the highest cost. Policies for floodplain buyouts should aim to reduce cost burden for low-income households. 
+The goal of our analysis is to determine whether household income is correlated with specific climate vulnerability indicators. Due to redlining and disenfranchisement, low-income households tend to be located in areas more vulnerable to climate change. Determining whether household income is correlated with indicators such as flood risk or heat index informs policy initiatives. For example, flood damage costs exceeded \$53 billion after hurricane Helene (Thomae, 2024). If flood risk increases with low-income households, these vulnerable populations would bear the highest cost. Policies for floodplain buyouts should aim to reduce cost burden for low-income households. 
+
 In addition, extreme heat exposure worsens chronic health conditions and can lead to premature death. Areas with lower socioeconomic status have limited access to resources such as health clinics that could address heatstroke symptoms (EPA, 2024). Therefore, if low-income households have a higher number of extreme heat days, they are more likely to suffer adverse effects. Level of walkability may also lead to worse health outcomes. People in less walkable areas have fewer opportunities to engage in physical exercise.  
 
 Lastly, we want to understand the distribution of climate change effects in NC. The varied topography and ecology of the state results in differing climate change impacts. Identifying counties with vulnerable populations will help decision-makers target policies to mitigate the effects of climate change.
 
-We focused our analysis at the county level in North Carolina. Data was obtained for median household income and population distribution of each county, as well as climate change indicators. This data was wrangled and analyzed to answer the following questions:
+We focused our analysis at the county level in North Carolina. Data was obtained for median household income and population distribution of each county, as well as climate vulnerability indicators. This data was wrangled and analyzed to answer the following questions:
 
 1.  Does average household income correlate with walkability, flood risk, and heat indices? 
 2.  Are specific counties disproportionately at risk of climate change?
@@ -82,7 +83,7 @@ We focused our analysis at the county level in North Carolina. Data was obtained
 
 # Dataset Information
 
-We obtained data from the NC Data Portal (https://ncdataportal.org/), a platform that gathers social and enviromental data related to North Carolina from government entities. By selecting specific parameters, we built a custom dataset. 
+We obtained data from the NC Data Portal (https://ncdataportal.org/), a platform that gathers social and environmental data related to North Carolina from government entities. By selecting specific parameters, we built a custom dataset. 
 
 Our custom dataset describes household income and population for all 100 counties in NC using ACS estimates from 2019-2023. Data for flood hazard area was sourced from the EPA based on 2020 measurements. Each indicator has its own column for a total of 14 columns (Table 1). 
 
@@ -108,9 +109,9 @@ Our custom dataset describes household income and population for all 100 countie
 
 \newpage
 
-## Census USA counties shapefile (cb_2018_us_county_20m.shp)
+## Census USA counties shapefile
 
-USA counties shapefile: this dataset provides mapping information for US counties and is filtered for to isolate the NC counties (FIPS: 37).
+USA counties shapefile (cb_2018_us_county_20m.shp): this dataset provides mapping information for US counties and is filtered for to isolate the NC counties (FIPS: 37). We used this dataset to provide a basemap for the visualization for the spatial distribution of the related indices.
 
 # Exploratory Analysis
 
@@ -122,7 +123,6 @@ The table below communicates the findings from the `summary()` function applied 
 
 ```{r, echo=FALSE}
 
-#This table does not look good in the rendered html file. Can you try to just select a few data of interest and put them in a table manuaully?
 SummaryKable <- NCData %>% 
   select(Total.Population,
          AvgHHinc,
@@ -132,6 +132,7 @@ SummaryKable <- NCData %>%
          PercentPopInFHA)
 
 kable(summary(SummaryKable))
+
 ```
 
 ## Data Distribution
@@ -148,7 +149,7 @@ Lastly, in Figure 1D, we explore how the number of days over the county's 95th p
 
 PopPlot <- ggplot(data = NCData)+
   stat_bin(aes(x= Total.Population), binwidth=20000)+
-  labs(title = "A: Total Population Distribution",
+  labs(title = "Total Population Distribution",
        subtitle = "Right Skew Confirmed \nBin Width = 20,000",
        x = "Total Population",
        y = "Count")+
@@ -162,7 +163,7 @@ IncomePlot <- ggplot(data = NCData)+
   geom_histogram(aes(x=MedHHinc), fill="blue", alpha=0.5)+
   geom_vline(xintercept=77228, linetype='dashed', 
              color='blue', linewidth=1)+
-  labs(title = "B: Average and Median Household \nIncome Distributions",
+  labs(title = "Average and Median Household \nIncome Distributions",
        subtitle = "Red = Average, Blue = Median \nVertical lines represent distribution's average",
        x = "Household Income",
        y = "Count")+
@@ -171,7 +172,7 @@ IncomePlot <- ggplot(data = NCData)+
 
 ResidentsinFHA <- ggplot(NCData, aes(PercentPopInFHA))+
   geom_histogram(stat = 'bin', fill="lightblue")+
-  labs(title= "C: Percent of Residents in \nFlood Hazard Areas",
+  labs(title= "Percent of Residents in \nFlood Hazard Areas",
        x="% Residents in Flood Hazard Area",
        y="Count")+
   scale_x_continuous(labels = percent,
@@ -179,12 +180,19 @@ ResidentsinFHA <- ggplot(NCData, aes(PercentPopInFHA))+
 
 DMHIPlot <- ggplot(NCData, aes(DailyMaxHeatIndex95Percentile))+
   geom_histogram(binwidth = 1, fill="lightblue")+
-  labs(title = "D: Count of 95th Percentile \nDaily Max Heat Index Days",
+  labs(title = "Count of 95th Percentile \nDaily Max Heat Index Days",
        x="Number of Days over 95th Percentile",
        y="Count")+
   scale_x_continuous(breaks=seq(5,17), limit = c(6,15))
 
-grid.arrange(PopPlot,IncomePlot,ResidentsinFHA,DMHIPlot,ncol=2)
+#grid.arrange(PopPlot,IncomePlot,ResidentsinFHA,DMHIPlot,ncol=2)
+
+
+plot_grid(PopPlot,IncomePlot,ResidentsinFHA,DMHIPlot, 
+          align = 'hv',
+          axis = 'tblr',
+          labels = "AUTO")
+
 ```
 
 Figure 2 demonstrates the percentage of residents in different designations of walkability. Level of walkability across the state is low. It appears a significant proportion of counties have well over half their population residing in "least walkable" and "below average walkable" conditions (plots A & B below). These two walkability designations approach normal distributions. Plots C & D, "above average walkable" and "most walkable," respectively, approach exponential distributions, with the majority of counties containing 0% of residents in the given walkability designation. 
@@ -226,7 +234,7 @@ MostWalkPlot <- ggplot(NCData,
   scale_y_continuous(limits= c(-0.05,100))+
   mytheme
 
-plot_arrange(LeastWalkPlot,
+plot_grid(LeastWalkPlot,
           BelowAvgWalkPlot,
           AboveAvgWalkPlot,
           MostWalkPlot, 
@@ -239,12 +247,15 @@ plot_arrange(LeastWalkPlot,
 ## Question 1: Does average household income correlate with walkability, flood risk, and heat indices? 
 
 *H0:* There is no significant difference between walkability, flood risk, and heat index based on household income.
+
 *HA:* There is a significant difference between walkability, flood risk, and heat index based on household income.
 
 We identified an average household income of 75k/yr statewide. We also visualized that the majority of households do not live in walkable areas, which makes sense based on the state's car-centric infrastructure. Most counties also had around 11 days of high heat per year and have less than 20% of residents living in flood zones.  
 
 ## Question 2: Are specific counties disproportionately at risk of climate change?
+
 *H0:* There is no significant difference in climate risk between counties.
+
 *HA:* There is a significant difference in climate risk between counties.
 
 Prior to analysis, we predict that counties closer to the coast are more at risk of climate change. These areas are subject to shifting coastlines, flooding, and hurricanes that will intensify with climate change. 
@@ -253,11 +264,9 @@ Prior to analysis, we predict that counties closer to the coast are more at risk
 
 # Analyses
 
-\newpage
-
 ## Regression
 
-```{r echo=FALSE, out.width="70%"}
+```{r echo=FALSE, out.width="50%", fig.cap = "*Fig 3. Correlation plot of the indices*"}
 NCData_corrplot <-NCData %>%
   mutate(log_Flood.Index = log(PercentPopInFHA),
          Avg.Household.Income.1000 = AvgHHinc/1000,
@@ -271,8 +280,9 @@ ggcorrplot(testcors,method="circle",type="lower", lab=TRUE, lab_size = 3.5, colo
 
 ```
 
-## Correlation Plot
-The correlation plot shows that walkability has the highest correlation with average income at 0.36. Heat index is also correlated with average income at 0.22. Both correlations are positive, meaning that walkability and high heat days increase with average income. Conversely, flooding is negatively correlated with avearge household income. None of the correlations are particularly strong across all NC counties. It should be noted that the correlation plot does not evaluate statistical significance of these relationships.
+### Correlation Plot
+
+The correlation plot (Figure 3) shows that walkability has the highest correlation with average income at 0.36. Heat index is also correlated with average income at 0.22. Both correlations are positive, meaning that walkability and high heat days increase with average income. Conversely, flooding is negatively correlated with avearge household income. None of the correlations are particularly strong across all NC counties. It should be noted that the correlation plot does not evaluate statistical significance of these relationships.
 
 ```{r eval=FALSE, include=FALSE}
 
@@ -289,17 +299,25 @@ Regression.Model3 <- lm(log_Flood.Index ~ Avg.Household.Income.1000,
 summary(Regression.Model3)
 
 ```
-## Regression Model 1
-This regression modeled the relationship between average household income and heat index. According to the regression, average income is positively correlated with heat index. The p-value for the coefficient was statistically significant (p = 0.0257) but the R-squared value was only 0.0497, indicating a weak relationship.  
 
-## Regression Model 2
-This regression assessed correlation between average household income and walkability. These variables are slightly positively correlated and the correlation is statistically significant (p = 0.000284). The increase in walkability with household income is a stronger relationship than heat index with an R-squared value of 0.1175.  
+### Regression 1: Heat Index ~ Average Household Income
 
-## Regression Model 3
+This regression modeled the relationship between average household income and heat index. According to the regression, average income is positively correlated with heat index. The p-value for the coefficient was statistically significant (p = 0.0257 < 0.05) but the R-squared value was only 0.0497, indicating a weak relationship.  
+
+### Regression 2: Walkability Index ~ Average Household Income
+
+This regression assessed correlation between average household income and walkability. These variables are slightly positively correlated and the correlation is statistically significant (p = 0.0003 << 0.05). The increase in walkability with household income is a stronger relationship than heat index with an R-squared value of 0.1175.  
+
+### Regression 3: Flood Index ~ Average Household Income 
+
 This regression examined the relationship between average household income and flood hazard area. These variables show no statistically significant correlation (p = 0.1567), but the R-squared value only explained ~2% of the relationship.
 
+### Regression Plots
 
-```{r echo=FALSE, plot.width = 12}
+The scatterplots below (Figure 4) visualize the regressions performed for the three climate change indicators and average household income. In general, the linear regression trendlines applied in the plots are consistent with the regression models and could have implications in real-life scenarios.
+
+
+```{r echo=FALSE, fig.width = 12, fig.cap = "*Fig 4. Scatterplot showing the three relationships mentioned above, with linear regression line applied*"}
 
 p6<- ggplot(NCData_corrplot, aes(Avg.Household.Income.1000, Heat.Index))+
   geom_jitter()+
@@ -319,14 +337,18 @@ p8 <- ggplot(NCData_corrplot, aes(Avg.Household.Income.1000, log_Flood.Index))+
 grid.arrange(p6,p7, p8,ncol=3)
 
 ```
-##Regression Plots
-These plots visualize the regressions performed for the three climate change indicators and average household income. 
 
 \newpage
 
 ## Spatial Analysis
 
-```{r Read the county data into an sf dataframe, echo=FALSE, plot.height=12, plot.width=12}
+The spatial analysis visualizes the distribution of average household income alongside the climate vulnerability indicators. Mapping the data (Figure 5) highlights counties of concern for each indicator. Higher values are shown in dark blue while lower values are shown in light blue. 
+
+As we can see in Figure 5, apart from the walkability index, the household income and the other two indices all show a certain trend in spatial distribution. For instance, the counties surrounding the Triangle and the Charlotte metropolitan areas enjoy much higher mean household income, while the counties along the northeast coastline suffer more from either extreme heat or flood hazard. Combined with the regression models mentioned above, this could further inform the climate mitigation efforts and guide the natural hazard preparation to make sure the funding is allocated to the areas in need.
+
+
+```{r Read the county data into an sf dataframe, fig.height=12, fig.width=12, include=FALSE}
+
 #3. Read in Counties shapefile into an sf dataframe, filtering for just NE counties
 NC_counties <- st_read(here("Data", "Spatial", "cb_2018_us_county_20m.shp")) %>%
   filter(STATEFP == "37")
@@ -336,6 +358,9 @@ NCData_County <- NCData %>%
   mutate(NAME = str_sub(County, start=1, end=-11))
 
 NC_counties_with_NCData <- merge(NC_counties, NCData_County, by = "NAME")
+```
+
+```{r fig.width=12, fig.cap= "*Fig 5. NC county maps showing the spatial distribution of the indices*"}
 
 #5. Plot the data
 
@@ -360,21 +385,28 @@ p13 <- ggplot(data = NC_counties_with_NCData) +
   geom_sf(aes(fill = BelowAvgWalk))+
   labs(title = "Percent Population \n Below Mean Walkability (%)", fill = "Legend")
 
-grid.arrange(p10, p11, p12, p13,ncol=2)
+#grid.arrange(p10, p11, p12, p13,ncol=2)
+
+plot_grid(p10, p11, p12, p13,
+          align = 'hv',
+          axis = 'tblr',
+          labels = "AUTO")
 
 ```
-## NC County Maps
-The spatial analysis visualizes the distribution of average household income alongside the climate change indicators. Mapping the data highlights counties of concern for each indicator. Higher values are shown in dark blue while lower values are shown in light blue. 
-
 
 \newpage
 
+# Limitations and further research directions
+
+
+
 # Summary and Conclusions
+
 Our analysis indicates that walkability and high heat index days/yr increase slightly with average household income. These relationships were statistically significant at a p = 0.05 level. Therefore, we can partially reject the null hypothesis for research question one. The rejection is partial because percent population in flood hazard areas does not depend on average income at the county level. These findings contradict our initial assumption that low-income areas would have lower walkability and more heat days. 
 
 We can also reject the null hypothesis for question two as the maps highlight specific counties at high risk of climate change. The percent population in flood hazard map shows that only coastal counties have a high proportion of residents at risk for flooding. Other counties further inland show minimal populations in flood-prone areas. In addition, counties on the coast had more max heat days than counties further inland. This difference is likely due to elevation increase from east to west. Several counties on the coast and in the piedmont had low walkability scores, although walkability distribution was inconsistent. 
 
-In conclusion, decision-makers should consider these climate change indicators when designing policies. Targeted policies for high-risk counties would save costs and have more effective outcomes. However, further research is required beyond the county level. Although household income did not correlate with flood hazard in our analysis, a relationship may appear if the analysis was conducted within counties or regionally.  
+In conclusion, decision-makers should consider these climate vulnerability indicators when designing policies. Targeted policies for high-risk counties would save costs and have more effective outcomes. However, further research is required beyond the county level. Although household income did not correlate with flood hazard in our analysis, a relationship may appear if the analysis was conducted within counties or regionally.  
 
 
 \newpage
