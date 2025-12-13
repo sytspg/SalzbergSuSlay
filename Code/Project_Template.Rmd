@@ -271,6 +271,8 @@ ggcorrplot(testcors,method="circle",type="lower", lab=TRUE, lab_size = 3.5, colo
 
 ```
 
+## Correlation Plot
+The correlation plot shows that walkability has the highest correlation with average income at 0.36. Heat index is also correlated with average income at 0.22. Both correlations are positive, meaning that walkability and high heat days increase with average income. Conversely, flooding is negatively correlated with avearge household income. None of the correlations are particularly strong across all NC counties.  
 
 ```{r eval=FALSE, include=FALSE}
 
@@ -283,6 +285,12 @@ Regression.Model2 <- lm(Walkability.Index ~ Avg.Household.Income.1000,
 summary(Regression.Model2)
 
 ```
+## Regression Model 1
+This regression modeled the relationship between average household income and heat index. According to the regression, average income is positively correlated with heat index. The p-value for the coefficient was statistically significant (p = 0.0257) but the R-squared value was only 0.0497, indicating a weak relationship.  
+
+## Regression Model 2
+This regression assessed correlation between walkability and average household income. 
+
 
 ```{r echo=FALSE, plot.width = 12}
 
@@ -351,6 +359,7 @@ grid.arrange(p10, p11, p12, p13,ncol=2)
 \newpage
 
 # Summary and Conclusions
+
 
 
 \newpage
